@@ -1,0 +1,23 @@
+package br.com.techchallenge.mecanica.dto.operadorDto;
+
+import java.util.UUID;
+
+public class OperadorResumoDto {
+
+    private UUID id;
+    private String nome;
+
+    public OperadorResumoDto(UUID id, String nome) {
+        this.id = id;
+        this.nome = nome;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+}
