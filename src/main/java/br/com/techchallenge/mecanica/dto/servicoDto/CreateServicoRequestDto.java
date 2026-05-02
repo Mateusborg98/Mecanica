@@ -1,6 +1,7 @@
 package br.com.techchallenge.mecanica.dto.servicoDto;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +15,14 @@ public class CreateServicoRequestDto {
     @NotNull
     @Positive
     private BigDecimal preco;
+
+    private UUID ordemId;
+
+    public CreateServicoRequestDto(@NotBlank String descricao, @NotNull @Positive BigDecimal preco, UUID ordemId) {
+        this.descricao = descricao;
+        this.preco = preco;
+        this.ordemId = ordemId;
+    }
 
     public String getDescricao() {
         return descricao;
@@ -29,6 +38,14 @@ public class CreateServicoRequestDto {
 
     public void setPreco(BigDecimal preco) {
         this.preco = preco;
+    }
+
+    public UUID getOrdemId() {
+        return ordemId;
+    }
+
+    public void setOrdemId(UUID ordemId) {
+        this.ordemId = ordemId;
     }
 
 }

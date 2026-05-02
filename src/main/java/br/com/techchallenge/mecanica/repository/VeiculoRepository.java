@@ -1,5 +1,6 @@
 package br.com.techchallenge.mecanica.repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,5 @@ public interface VeiculoRepository extends JpaRepository<Veiculo, UUID> {
 
     boolean existsByPlaca(String placa);
 
-    Veiculo findByPlaca(String placa);
-
+    Optional<Veiculo> findByPlaca(String placa);
 }

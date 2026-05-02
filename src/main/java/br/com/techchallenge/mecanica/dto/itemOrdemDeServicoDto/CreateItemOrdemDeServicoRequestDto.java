@@ -19,6 +19,13 @@ public class CreateItemOrdemDeServicoRequestDto {
     @Positive
     private BigDecimal valorUnitario;
 
+    public CreateItemOrdemDeServicoRequestDto(@NotNull UUID pecaId, @NotNull @Positive Integer quantidade,
+            @NotNull @Positive BigDecimal valorUnitario) {
+        this.pecaId = pecaId;
+        this.quantidade = quantidade;
+        this.valorUnitario = valorUnitario;
+    }
+
     public UUID getPecaId() {
         return pecaId;
     }

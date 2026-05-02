@@ -16,6 +16,15 @@ public class UpdateVeiculoRequestDto {
     @Positive
     private Integer ano;
 
+    public UpdateVeiculoRequestDto(String marca, String modelo, Integer ano) {
+        this.marca = marca;
+        this.modelo = modelo;
+        this.ano = ano;
+    }
+
+    public UpdateVeiculoRequestDto() {
+    }
+
     public String getMarca() {
         return marca;
     }

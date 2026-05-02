@@ -2,27 +2,49 @@ package br.com.techchallenge.mecanica.entity;
 
 import java.util.UUID;
 
+import br.com.techchallenge.mecanica.exception.RegraNegocioException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Estoque {
+
     @Id
     @GeneratedValue
     private UUID id;
 
     @OneToOne(optional = false)
-    @MapsId
     private Peca peca;
 
     @Column(nullable = false)
     private Integer quantidade;
 
-    protected Estoque() {
+    public void registrarEntrada(int qtd) {
+        if (qtd <= 0) {
+            throw new IllegalArgumentException("Quantidade inválida");
+        }
+        this.quantidade += qtd;
+    }
+
+    public void registrarSaida(int qtd) {
+        if (qtd <= 0) {
+            throw new IllegalArgumentException("Quantidade inválida");
+        }
+        if (qtd > this.quantidade) {
+            throw new RegraNegocioException("Estoque insuficiente");
+        }
+        this.quantidade -= qtd;
     }
 
     @Override
@@ -37,30 +59,6 @@ public class Estoque {
     @Override
     public int hashCode() {
         return getClass().hashCode();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(final UUID id) {
-        this.id = id;
-    }
-
-    public Peca getPeca() {
-        return peca;
-    }
-
-    public void setPeca(final Peca peca) {
-        this.peca = peca;
-    }
-
-    public Integer getQuantidade() {
-        return quantidade;
-    }
-
-    public void setQuantidade(final Integer quantidade) {
-        this.quantidade = quantidade;
     }
 
 }

@@ -19,6 +19,14 @@ public class CreateClienteRequestDto {
     @Email
     private String email;
 
+    public CreateClienteRequestDto(@NotBlank String nome, @NotBlank String cpfCnpj, @NotBlank String contato,
+            @Email String email) {
+        this.nome = nome;
+        this.cpfCnpj = cpfCnpj;
+        this.contato = contato;
+        this.email = email;
+    }
+    
     public String getNome() {
         return nome;
     }

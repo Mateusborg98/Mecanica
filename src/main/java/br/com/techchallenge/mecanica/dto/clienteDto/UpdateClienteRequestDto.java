@@ -14,6 +14,15 @@ public class UpdateClienteRequestDto {
     @Email
     private String email;
 
+    public UpdateClienteRequestDto(@NotBlank String nome, @NotBlank String contato, @Email String email) {
+        this.nome = nome;
+        this.contato = contato;
+        this.email = email;
+    }
+
+    public UpdateClienteRequestDto() {
+    }
+
     public String getNome() {
         return nome;
     }

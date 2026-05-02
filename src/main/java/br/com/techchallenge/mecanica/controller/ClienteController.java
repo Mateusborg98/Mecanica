@@ -33,9 +33,14 @@ public class ClienteController {
         return service.criar(request);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/id/{id}")
     public ClienteResponseDto buscarPorId(@PathVariable UUID id) {
         return service.buscarPorId(id);
+    }
+
+    @GetMapping("/cpf-cnpj/{cpfCnpj}")
+    public ClienteResponseDto buscarPorCpf(@PathVariable String cpfCnpj) {
+        return service.buscarPorCpfCnpj(cpfCnpj);
     }
 
     @GetMapping

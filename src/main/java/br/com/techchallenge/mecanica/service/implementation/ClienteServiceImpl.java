@@ -14,7 +14,6 @@ import br.com.techchallenge.mecanica.exception.RegraNegocioException;
 import br.com.techchallenge.mecanica.mapper.ClienteMapper;
 import br.com.techchallenge.mecanica.repository.ClienteRepository;
 import br.com.techchallenge.mecanica.service.ClienteService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -59,7 +58,7 @@ public class ClienteServiceImpl implements ClienteService {
 
     private Cliente buscar(UUID id) {
         return repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado"));
     }
 
     public boolean buscarPorCpfCnpj(CreateClienteRequestDto request) {
@@ -68,7 +67,7 @@ public class ClienteServiceImpl implements ClienteService {
 
     public ClienteResponseDto buscarPorCpfCnpj(String cpfCnpj) {
         Cliente cliente = repository.findByCpfCnpj(cpfCnpj)
-                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado"));
         return mapper.toResponse(cliente);
     }
 

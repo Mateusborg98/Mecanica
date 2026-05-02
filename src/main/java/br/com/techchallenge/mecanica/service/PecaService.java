@@ -18,4 +18,8 @@ public interface PecaService {
     PecaResponseDto atualizar(UUID id, UpdatePecaRequestDto request);
 
     void deletar(UUID id);
+
+    void registrarSaidaEstoque(UUID pecaId, int quantidade);
+
+    void registrarEntradaEstoque(UUID pecaId, int quantidade);
 }

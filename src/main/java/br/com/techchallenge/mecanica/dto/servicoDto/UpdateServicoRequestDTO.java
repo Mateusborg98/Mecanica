@@ -15,6 +15,11 @@ public class UpdateServicoRequestDTO {
     @DecimalMin(value = "0.0", inclusive = false, message = "Valor deve ser maior que zero")
     private BigDecimal valor;
 
+    public UpdateServicoRequestDTO(String descricao, BigDecimal valor) {
+        this.descricao = descricao;
+        this.valor = valor;
+    }
+
     public String getDescricao() {
         return descricao;
     }

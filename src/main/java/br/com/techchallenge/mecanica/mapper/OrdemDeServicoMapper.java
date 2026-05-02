@@ -1,7 +1,6 @@
 package br.com.techchallenge.mecanica.mapper;
 
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
@@ -14,17 +13,7 @@ import br.com.techchallenge.mecanica.entity.Veiculo;
 
 @Component
 public class OrdemDeServicoMapper {
-
-    private final ItemOrdemDeServicoMapper itemMapper;
-    private final ServicoMapper servicoMapper;
-
-    public OrdemDeServicoMapper(
-            ItemOrdemDeServicoMapper itemMapper,
-            ServicoMapper servicoMapper) {
-        this.itemMapper = itemMapper;
-        this.servicoMapper = servicoMapper;
-    }
-
+    
     public OrdemDeServico toEntity(
             CreateOrdemDeServicoRequestDto request,
             Veiculo veiculo,
@@ -41,20 +30,11 @@ public class OrdemDeServicoMapper {
     }
 
     public OrdemDeServicoResponseDto toResponse(OrdemDeServico os) {
-        return new OrdemDeServicoResponseDto(
-                os.getId(),
-                os.getStatus().name(),
-                os.getDtInicioOs(),
-                os.getDtFimOs(),
-                ClienteMapper.toResumo(os.getCliente()),
-                VeiculoMapper.toResumo(os.getVeiculo()),
-                OperadorMapper.toResumo(os.getOperador()),
-                os.getItens().stream()
-                        .map(itemMapper::toResponse)
-                        .collect(Collectors.toList()),
-                os.getServicos().stream()
-                        .map(servicoMapper::toResponse)
-                        .collect(Collectors.toList()));
+        OrdemDeServicoResponseDto dto = 
+            new OrdemDeServicoResponseDto(os.getId(), os.getStatus(), os.getDtInicioOs(), 
+                os.getDtFimOs(), os.getCliente(), os.getVeiculo(), null, os.getItens(), 
+                os.getServicos());
+        return dto;
     }
 
     public OrdemDeServicoResumoDto toResumo(OrdemDeServico os) {

@@ -16,7 +16,6 @@ import br.com.techchallenge.mecanica.mapper.VeiculoMapper;
 import br.com.techchallenge.mecanica.repository.ClienteRepository;
 import br.com.techchallenge.mecanica.repository.VeiculoRepository;
 import br.com.techchallenge.mecanica.service.VeiculoService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -35,7 +34,7 @@ public class VeiculoServiceImpl implements VeiculoService {
         }
 
         Cliente cliente = clienteRepository.findById(request.getClienteId())
-                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado"));
 
         Veiculo veiculo = mapper.toEntity(request, cliente);
         return mapper.toResponse(repository.save(veiculo));
@@ -57,7 +56,9 @@ public class VeiculoServiceImpl implements VeiculoService {
     public VeiculoResponseDto atualizar(UUID id, UpdateVeiculoRequestDto request) {
         Veiculo veiculo = buscar(id);
         mapper.updateEntity(request, veiculo);
-        return mapper.toResponse(veiculo);
+        Veiculo veiculoSalvo = repository.save(veiculo);
+        return mapper.toResponse(veiculoSalvo);
+
     }
 
     public void deletar(UUID id) {
@@ -66,12 +67,14 @@ public class VeiculoServiceImpl implements VeiculoService {
 
     private Veiculo buscar(UUID id) {
         return repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Veículo não encontrado"));
+                .orElseThrow(() -> new RegraNegocioException("Veículo não encontrado"));
     }
 
     @Override
     public VeiculoResponseDto buscarPorPlaca(String placa) {
-        Veiculo veiculo = repository.findByPlaca(placa);
+        Veiculo veiculo = repository.findByPlaca(placa)
+                .orElseThrow(() -> new RegraNegocioException("Veículo não encontrado"));
+
         return mapper.toResponse(veiculo);
     }
 

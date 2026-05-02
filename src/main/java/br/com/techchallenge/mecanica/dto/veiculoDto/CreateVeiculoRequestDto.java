@@ -26,6 +26,17 @@ public class CreateVeiculoRequestDto {
     @NotNull
     private UUID clienteId;
 
+    
+
+    public CreateVeiculoRequestDto(@NotBlank String placa, @NotBlank String marca, @NotBlank String modelo,
+            @NotNull @Positive Integer ano, @NotNull UUID clienteId) {
+        this.placa = placa;
+        this.marca = marca;
+        this.modelo = modelo;
+        this.ano = ano;
+        this.clienteId = clienteId;
+    }
+
     public String getPlaca() {
         return placa;
     }

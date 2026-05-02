@@ -1,5 +1,6 @@
 package br.com.techchallenge.mecanica.service.implementation;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,6 +13,7 @@ import br.com.techchallenge.mecanica.entity.Cliente;
 import br.com.techchallenge.mecanica.entity.Estoque;
 import br.com.techchallenge.mecanica.entity.ItemOrdemDeServico;
 import br.com.techchallenge.mecanica.entity.OrdemDeServico;
+import br.com.techchallenge.mecanica.entity.Peca;
 import br.com.techchallenge.mecanica.entity.StatusOrdemDeServicoEnum;
 import br.com.techchallenge.mecanica.entity.Veiculo;
 import br.com.techchallenge.mecanica.exception.RegraNegocioException;
@@ -20,7 +22,6 @@ import br.com.techchallenge.mecanica.repository.ClienteRepository;
 import br.com.techchallenge.mecanica.repository.EstoqueRepository;
 import br.com.techchallenge.mecanica.repository.OrdemDeServicoRepository;
 import br.com.techchallenge.mecanica.repository.PecaRepository;
-import br.com.techchallenge.mecanica.repository.ServicoRepository;
 import br.com.techchallenge.mecanica.repository.VeiculoRepository;
 import br.com.techchallenge.mecanica.service.OrdemServicoService;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,10 +32,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrdemDeServicoServiceImpl implements OrdemServicoService {
 
+    private final PecaServiceImpl pecaServiceImpl;
     private final OrdemDeServicoRepository ordemRepository;
     private final ClienteRepository clienteRepository;
     private final VeiculoRepository veiculoRepository;
-    private final ServicoRepository servicoRepository;
     private final PecaRepository pecaRepository;
     private final EstoqueRepository estoqueRepository;
     private final OrdemDeServicoMapper mapper;
@@ -43,41 +44,81 @@ public class OrdemDeServicoServiceImpl implements OrdemServicoService {
     public OrdemDeServicoResponseDto criar(CreateOrdemDeServicoRequestDto request) {
 
         Cliente cliente = clienteRepository.findById(request.getClienteId())
-                .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado"));
 
         Veiculo veiculo = veiculoRepository.findById(request.getVeiculoId())
-                .orElseThrow(() -> new EntityNotFoundException("Veículo não encontrado"));
+                .orElseThrow(() -> new RegraNegocioException("Veículo não encontrado"));
 
-        OrdemDeServico os = mapper.toEntity(request, veiculo, cliente);
+        OrdemDeServico os = new OrdemDeServico();
+        os.setCliente(cliente);
+        os.setVeiculo(veiculo);
         os.setStatus(StatusOrdemDeServicoEnum.RECEBIDA);
+        os.setDtInicioOs(LocalDateTime.now());
 
-        request.getServicos().forEach(s -> os.adicionarServico(
-                servicoRepository.findById(s.getId())
-                        .orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado"))));
+        ordemRepository.save(os);
+        return mapper.toResponse(os);
+    }
 
-        request.getItens().forEach(i -> os.adicionarPeca(
-                pecaRepository.findById(i.getId())
-                        .orElseThrow(() -> new EntityNotFoundException("Peça não encontrada")),
-                i.getQuantidade()));
+    public OrdemDeServicoResponseDto adicionarPecaNaOs(
+            UUID ordemId,
+            UUID pecaId,
+            int quantidade) {
+        OrdemDeServico os = ordemRepository.findById(ordemId)
+                .orElseThrow(() -> new RegraNegocioException("OS não encontrada"));
 
-        os.calcularValorTotal();
+        Peca peca = pecaRepository.findById(pecaId)
+                .orElseThrow(() -> new RegraNegocioException("Peça não encontrada"));
+
+        pecaServiceImpl.registrarSaidaEstoque(pecaId, quantidade);
+        os.adicionarPeca(peca, quantidade);
+
+        ordemRepository.save(os);
+        return mapper.toResponse(os);
+    }
+
+    @Override
+    public OrdemDeServicoResponseDto iniciarDiagnostico(UUID id) {
+        OrdemDeServico os = buscar(id);
+        validarStatus(os, StatusOrdemDeServicoEnum.RECEBIDA);
+        os.setStatus(StatusOrdemDeServicoEnum.EM_DIAGNOSTICO);
         return mapper.toResponse(ordemRepository.save(os));
     }
 
     @Override
-    public OrdemDeServicoResponseDto enviarParaAprovacao(UUID ordemId) {
-        OrdemDeServico os = buscarOrdem(ordemId);
-        validarStatus(os, StatusOrdemDeServicoEnum.RECEBIDA);
+    public OrdemDeServicoResponseDto enviarParaAprovacao(UUID id) {
+        OrdemDeServico os = buscar(id);
+        validarStatus(os, StatusOrdemDeServicoEnum.EM_DIAGNOSTICO);
         os.setStatus(StatusOrdemDeServicoEnum.AGUARDANDO_APROVACAO);
-        return mapper.toResponse(os);
+        return mapper.toResponse(ordemRepository.save(os));
     }
 
     @Override
-    public OrdemDeServicoResponseDto iniciarDiagnostico(UUID ordemId) {
-        OrdemDeServico os = buscarOrdem(ordemId);
-        validarStatus(os, StatusOrdemDeServicoEnum.AGUARDANDO_APROVACAO);
-        os.setStatus(StatusOrdemDeServicoEnum.EM_DIAGNOSTICO);
-        return mapper.toResponse(os);
+    public OrdemDeServicoResponseDto finalizar(UUID id) {
+        OrdemDeServico os = buscar(id);
+        validarStatus(os, StatusOrdemDeServicoEnum.EM_EXECUCAO);
+        os.setStatus(StatusOrdemDeServicoEnum.FINALIZADA);
+        os.setDtFimOs(LocalDateTime.now());
+        return mapper.toResponse(ordemRepository.save(os));
+    }
+
+    @Override
+    public OrdemDeServicoResponseDto entregar(UUID id) {
+        OrdemDeServico os = buscar(id);
+        validarStatus(os, StatusOrdemDeServicoEnum.FINALIZADA);
+        os.setStatus(StatusOrdemDeServicoEnum.ENTREGUE);
+        return mapper.toResponse(ordemRepository.save(os));
+    }
+
+    private OrdemDeServico buscar(UUID id) {
+        return ordemRepository.findById(id)
+                .orElseThrow(() -> new RegraNegocioException("OS não encontrada"));
+    }
+
+    private void validarStatus(OrdemDeServico os, StatusOrdemDeServicoEnum esperado) {
+        if (os.getStatus() != esperado) {
+            throw new RegraNegocioException(
+                    "Transição inválida de status. Status atual: " + os.getStatus());
+        }
     }
 
     @Override
@@ -94,22 +135,6 @@ public class OrdemDeServicoServiceImpl implements OrdemServicoService {
         validarStatus(os, StatusOrdemDeServicoEnum.ORCAMENTO_APROVADO);
         baixarEstoque(os);
         os.setStatus(StatusOrdemDeServicoEnum.EM_EXECUCAO);
-        return mapper.toResponse(os);
-    }
-
-    @Override
-    public OrdemDeServicoResponseDto finalizar(UUID ordemId) {
-        OrdemDeServico os = buscarOrdem(ordemId);
-        validarStatus(os, StatusOrdemDeServicoEnum.EM_EXECUCAO);
-        os.setStatus(StatusOrdemDeServicoEnum.FINALIZADA);
-        return mapper.toResponse(os);
-    }
-
-    @Override
-    public OrdemDeServicoResponseDto entregar(UUID ordemId) {
-        OrdemDeServico os = buscarOrdem(ordemId);
-        validarStatus(os, StatusOrdemDeServicoEnum.FINALIZADA);
-        os.setStatus(StatusOrdemDeServicoEnum.ENTREGUE);
         return mapper.toResponse(os);
     }
 
@@ -133,13 +158,6 @@ public class OrdemDeServicoServiceImpl implements OrdemServicoService {
                 .orElseThrow(() -> new EntityNotFoundException("Ordem de Serviço não encontrada"));
     }
 
-    private void validarStatus(OrdemDeServico os, StatusOrdemDeServicoEnum statusEsperado) {
-        if (os.getStatus() != statusEsperado) {
-            throw new RegraNegocioException(
-                    "Transição inválida de status. Status atual: " + os.getStatus());
-        }
-    }
-
     private void baixarEstoque(OrdemDeServico os) {
         for (ItemOrdemDeServico item : os.getItens()) {
 
@@ -156,4 +174,5 @@ public class OrdemDeServicoServiceImpl implements OrdemServicoService {
                     estoque.getQuantidade() - item.getQuantidade());
         }
     }
+
 }

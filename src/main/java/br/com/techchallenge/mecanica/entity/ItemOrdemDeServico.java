@@ -8,8 +8,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ItemOrdemDeServico {
     @Id
     @GeneratedValue
@@ -27,9 +35,6 @@ public class ItemOrdemDeServico {
     @Column(nullable = false)
     private BigDecimal valorUnitario;
 
-    public ItemOrdemDeServico() {
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -42,46 +47,6 @@ public class ItemOrdemDeServico {
     @Override
     public int hashCode() {
         return getClass().hashCode();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public OrdemDeServico getOrdemDeServico() {
-        return ordemDeServico;
-    }
-
-    public void setOrdemDeServico(OrdemDeServico ordemDeServico) {
-        this.ordemDeServico = ordemDeServico;
-    }
-
-    public Peca getPeca() {
-        return peca;
-    }
-
-    public void setPeca(Peca peca) {
-        this.peca = peca;
-    }
-
-    public Integer getQuantidade() {
-        return quantidade;
-    }
-
-    public void setQuantidade(Integer quantidade) {
-        this.quantidade = quantidade;
-    }
-
-    public BigDecimal getValorUnitario() {
-        return valorUnitario;
-    }
-
-    public void setValorUnitario(BigDecimal valorUnitario) {
-        this.valorUnitario = valorUnitario;
     }
 
 }

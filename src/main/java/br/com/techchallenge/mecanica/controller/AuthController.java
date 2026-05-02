@@ -14,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final JwtService jwtService;
-
     @PostMapping("/login")
     public String login(@RequestBody LoginRequestDto request) {
 
@@ -23,7 +21,7 @@ public class AuthController {
         if ("admin".equals(request.getUsername())
                 && "123".equals(request.getPassword())) {
 
-            return jwtService.gerarToken(request.getUsername());
+            return JwtService.gerarToken(request.getUsername());
         }
 
         throw new RuntimeException("Usuário ou senha inválidos");

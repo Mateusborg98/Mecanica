@@ -8,8 +8,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Servico {
     @Id
     @GeneratedValue
@@ -24,9 +32,6 @@ public class Servico {
     @ManyToOne(optional = false)
     private OrdemDeServico ordemDeServico;
 
-    public Servico() {
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -39,34 +44,6 @@ public class Servico {
     @Override
     public int hashCode() {
         return getClass().hashCode();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public BigDecimal getPreco() {
-        return preco;
-    }
-
-    public void setPreco(BigDecimal preco) {
-        this.preco = preco;
-    }
-
-    public OrdemDeServico getOrdemDeServico() {
-        return ordemDeServico;
-    }
-
-    public void setOrdemDeServico(OrdemDeServico ordemDeServico) {
-        this.ordemDeServico = ordemDeServico;
     }
 
 }

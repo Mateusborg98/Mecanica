@@ -18,6 +18,15 @@ public class CreatePecaRequestDto {
     @Positive
     private BigDecimal preco;
 
+    @NotBlank
+    private Integer quantidadeInicial;
+
+    public CreatePecaRequestDto(String nome, String marca, BigDecimal preco) {
+        this.nome = nome;
+        this.marca = marca;
+        this.preco = preco;
+    }
+
     public String getNome() {
         return nome;
     }
@@ -40,6 +49,14 @@ public class CreatePecaRequestDto {
 
     public void setPreco(BigDecimal preco) {
         this.preco = preco;
+    }
+
+    public Integer getQuantidadeInicial() {
+        return quantidadeInicial;
+    }
+
+    public void setQuantidadeInicial(Integer quantidadeInicial) {
+        this.quantidadeInicial = quantidadeInicial;
     }
 
 }

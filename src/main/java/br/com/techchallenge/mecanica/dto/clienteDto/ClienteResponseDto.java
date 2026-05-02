@@ -18,6 +18,8 @@ public class ClienteResponseDto {
         this.email = email;
     }
 
+    public ClienteResponseDto() {}
+
     public UUID getId() {
         return id;
     }

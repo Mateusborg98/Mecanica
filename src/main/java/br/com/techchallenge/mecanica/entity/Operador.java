@@ -6,8 +6,16 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Operador {
     @Id
     @GeneratedValue
@@ -24,9 +32,6 @@ public class Operador {
     @Column(nullable = false)
     private Integer contato;
 
-    protected Operador() {
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -39,46 +44,6 @@ public class Operador {
     @Override
     public int hashCode() {
         return getClass().hashCode();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public Integer getMatricula() {
-        return matricula;
-    }
-
-    public void setMatricula(Integer matricula) {
-        this.matricula = matricula;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Integer getContato() {
-        return contato;
-    }
-
-    public void setContato(Integer contato) {
-        this.contato = contato;
     }
 
 }

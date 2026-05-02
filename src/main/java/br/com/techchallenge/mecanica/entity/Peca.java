@@ -7,10 +7,18 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Peca {
+
     @Id
     @GeneratedValue
     private UUID id;
@@ -24,12 +32,6 @@ public class Peca {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal preco;
 
-    @OneToOne(mappedBy = "peca")
-    private Estoque estoque;
-
-    public Peca() {
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -42,38 +44,6 @@ public class Peca {
     @Override
     public int hashCode() {
         return getClass().hashCode();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getMarca() {
-        return marca;
-    }
-
-    public void setMarca(String marca) {
-        this.marca = marca;
-    }
-
-    public BigDecimal getPreco() {
-        return preco;
-    }
-
-    public void setPreco(BigDecimal preco) {
-        this.preco = preco;
-    }
-
-    public Estoque getEstoque() {
-        return estoque;
     }
 
 }
