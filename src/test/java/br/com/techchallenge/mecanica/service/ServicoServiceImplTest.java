@@ -8,6 +8,8 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,6 +25,7 @@ import br.com.techchallenge.mecanica.dto.servicoDto.CreateServicoRequestDto;
 import br.com.techchallenge.mecanica.dto.servicoDto.ServicoResponseDto;
 import br.com.techchallenge.mecanica.dto.servicoDto.UpdateServicoRequestDTO;
 import br.com.techchallenge.mecanica.entity.Servico;
+import br.com.techchallenge.mecanica.entity.StatusServicoEnum;
 import br.com.techchallenge.mecanica.mapper.ServicoMapper;
 import br.com.techchallenge.mecanica.repository.ServicoRepository;
 import br.com.techchallenge.mecanica.service.implementation.ServicoServiceImpl;
@@ -149,5 +152,68 @@ class ServicoServiceImplTest {
         service.deletar(servicoId);
 
         verify(repository).delete(servico);
+    }
+
+    @ExtendWith(MockitoExtension.class)
+    class ServicoServiceTest {
+
+        @Mock
+        private ServicoRepository repository;
+
+        @InjectMocks
+        private ServicoService service;
+
+        @Test
+        void deveCalcularTempoMedioPorServico() {
+
+            Servico s1 = new Servico();
+            s1.setDescricao("Troca de óleo");
+            s1.setStatus(StatusServicoEnum.FINALIZADO);
+            s1.setDtInicio(LocalDateTime.now().minusMinutes(40));
+            s1.setDtFim(LocalDateTime.now());
+
+            Servico s2 = new Servico();
+
+            s2.setDescricao("Troca de óleo");
+            s2.setStatus(StatusServicoEnum.FINALIZADO);
+            s2.setDtInicio(LocalDateTime.now().minusMinutes(20));
+            s2.setDtFim(LocalDateTime.now());
+
+            when(repository.findByDescricaoAndStatus(
+                    "Troca de óleo",
+                    StatusServicoEnum.FINALIZADO)).thenReturn(List.of(s1, s2));
+
+            Duration media = service.calcularTempoMedioPorServico("Troca de óleo");
+
+            assertEquals(30, media.toMinutes());
+        }
+    }
+
+    @Test
+    void deveRetornarZeroQuandoNaoExistemServicosFinalizados() {
+
+        when(repository.findByDescricaoAndStatus(
+                "Troca de óleo",
+                StatusServicoEnum.FINALIZADO)).thenReturn(List.of());
+
+        Duration resultado = service.calcularTempoMedioPorServico("Troca de óleo");
+
+        assertEquals(Duration.ZERO, resultado);
+    }
+
+    @Test
+    void deveIgnorarServicosSemDatasDeExecucao() {
+
+        Servico s1 = new Servico();
+        s1.setDtInicio(null);
+        s1.setDtFim(null);
+
+        when(repository.findByDescricaoAndStatus(
+                "Troca de óleo",
+                StatusServicoEnum.FINALIZADO)).thenReturn(List.of(s1));
+
+        Duration resultado = service.calcularTempoMedioPorServico("Troca de óleo");
+
+        assertEquals(Duration.ZERO, resultado);
     }
 }

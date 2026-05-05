@@ -1,5 +1,6 @@
 package br.com.techchallenge.mecanica.service.implementation;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -174,6 +175,22 @@ public class OrdemDeServicoServiceImpl implements OrdemServicoService {
             estoque.setQuantidade(
                     estoque.getQuantidade() - item.getQuantidade());
         }
+    }
+
+    public Duration calcularTempoMedioExecucao() {
+
+        List<OrdemDeServico> finalizadas = ordemRepository.findByStatus(StatusOrdemDeServicoEnum.FINALIZADA);
+
+        if (finalizadas.isEmpty()) {
+            return Duration.ZERO;
+        }
+
+        Duration total = finalizadas.stream()
+                .filter(os -> os.getDtInicioOs() != null && os.getDtFimOs() != null)
+                .map(os -> Duration.between(os.getDtInicioOs(), os.getDtFimOs()))
+                .reduce(Duration.ZERO, Duration::plus);
+
+        return total.dividedBy(finalizadas.size());
     }
 
 }

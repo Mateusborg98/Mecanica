@@ -16,7 +16,6 @@ public class ServicoResponseDto {
     }
 
     public ServicoResponseDto() {
-        //TODO Auto-generated constructor stub
     }
 
     public UUID getId() {

@@ -1,5 +1,6 @@
 package br.com.techchallenge.mecanica.service.implementation;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,6 +11,7 @@ import br.com.techchallenge.mecanica.dto.servicoDto.CreateServicoRequestDto;
 import br.com.techchallenge.mecanica.dto.servicoDto.ServicoResponseDto;
 import br.com.techchallenge.mecanica.dto.servicoDto.UpdateServicoRequestDTO;
 import br.com.techchallenge.mecanica.entity.Servico;
+import br.com.techchallenge.mecanica.entity.StatusServicoEnum;
 import br.com.techchallenge.mecanica.mapper.ServicoMapper;
 import br.com.techchallenge.mecanica.repository.ServicoRepository;
 import br.com.techchallenge.mecanica.service.ServicoService;
@@ -61,4 +63,26 @@ public class ServicoServiceImpl implements ServicoService {
         return repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado"));
     }
+
+    public Duration calcularTempoMedioPorServico(String descricaoServico) {
+
+        List<Servico> servicosFinalizados = repository.findByDescricaoAndStatus(
+                descricaoServico,
+                StatusServicoEnum.FINALIZADO);
+
+        List<Servico> servicosComTempoValido = servicosFinalizados.stream()
+                .filter(s -> s.getDtInicio() != null && s.getDtFim() != null)
+                .toList();
+
+        if (servicosComTempoValido.isEmpty()) {
+            return Duration.ZERO;
+        }
+
+        Duration total = servicosComTempoValido.stream()
+                .map(s -> Duration.between(s.getDtInicio(), s.getDtFim()))
+                .reduce(Duration.ZERO, Duration::plus);
+
+        return total.dividedBy(servicosComTempoValido.size());
+    }
+
 }

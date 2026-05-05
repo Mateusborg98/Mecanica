@@ -55,18 +55,32 @@ VALUES (
   (SELECT id FROM veiculo WHERE placa = 'ABC1D23')
 );
 
-INSERT INTO servico (id, descricao, preco, ordem_de_servico_id)
+INSERT INTO servico (
+  id,
+  descricao,
+  preco,
+  status,
+  dt_inicio,
+  dt_fim,
+  ordem_de_servico_id
+)
 VALUES
 (
   gen_random_uuid(),
   'Troca de óleo',
   120.00,
+  'FINALIZADO',
+  NOW() - INTERVAL '45 minutes',
+  NOW() - INTERVAL '5 minutes',
   (SELECT id FROM ordem_de_servico LIMIT 1)
 ),
 (
   gen_random_uuid(),
-  'Revisão geral',
+  'Troca de pneu',
   300.00,
+  'FINALIZADO',
+  NOW() - INTERVAL '90 minutes',
+  NOW() - INTERVAL '30 minutes',
   (SELECT id FROM ordem_de_servico LIMIT 1)
 );
 

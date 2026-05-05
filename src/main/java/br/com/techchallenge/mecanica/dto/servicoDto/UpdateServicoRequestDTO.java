@@ -21,7 +21,6 @@ public class UpdateServicoRequestDTO {
     }
 
     public UpdateServicoRequestDTO() {
-        //TODO Auto-generated constructor stub
     }
 
     public String getDescricao() {

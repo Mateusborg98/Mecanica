@@ -1,10 +1,13 @@
 package br.com.techchallenge.mecanica.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
@@ -32,6 +35,13 @@ public class Servico {
     @ManyToOne(optional = false)
     private OrdemDeServico ordemDeServico;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StatusServicoEnum status;
+
+    private LocalDateTime dtInicio;
+    private LocalDateTime dtFim;
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -44,6 +54,16 @@ public class Servico {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public Servico(UUID id, String descricao, BigDecimal preco, OrdemDeServico ordemDeServico, StatusServicoEnum status,
+            LocalDateTime dtInicio) {
+        this.id = id;
+        this.descricao = descricao;
+        this.preco = preco;
+        this.ordemDeServico = ordemDeServico;
+        this.status = status;
+        this.dtInicio = dtInicio;
     }
 
 }

@@ -1,5 +1,6 @@
 package br.com.techchallenge.mecanica.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,6 +11,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +33,7 @@ import br.com.techchallenge.mecanica.entity.OrdemDeServico;
 import br.com.techchallenge.mecanica.entity.Peca;
 import br.com.techchallenge.mecanica.entity.Servico;
 import br.com.techchallenge.mecanica.entity.StatusOrdemDeServicoEnum;
+import br.com.techchallenge.mecanica.entity.StatusServicoEnum;
 import br.com.techchallenge.mecanica.entity.Veiculo;
 import br.com.techchallenge.mecanica.exception.RegraNegocioException;
 import br.com.techchallenge.mecanica.mapper.OrdemDeServicoMapper;
@@ -71,7 +75,7 @@ class OrdemDeServicoServiceImplTest {
 
         private CreateOrdemDeServicoRequestDto createOrdemDeServicoRequestDtoHelper() {
                 OrdemDeServico os = new OrdemDeServico();
-                Servico servico = new Servico(UUID.randomUUID(), "Troca de óleo", new BigDecimal("20"), os);
+                Servico servico = new Servico(UUID.randomUUID(), "Troca de óleo", new BigDecimal("20"), os, StatusServicoEnum.AGUARDANDO, LocalDateTime.now());
                 List<Servico> servicos = new ArrayList<>();
                 servicos.add(servico);
                 os.setServicos(servicos);
@@ -424,6 +428,21 @@ class OrdemDeServicoServiceImplTest {
                 assertThrows(RegraNegocioException.class,
                                 () -> service.adicionarPecaNaOs(
                                                 UUID.randomUUID(), UUID.randomUUID(), 1));
+        }
+
+        @Test
+        void deveCalcularTempoMedioExecucao() {
+
+                OrdemDeServico os = new OrdemDeServico();
+                os.setDtInicioOs(LocalDateTime.now().minusHours(2));
+                os.setDtFimOs(LocalDateTime.now());
+
+                when(ordemRepository.findByStatus(StatusOrdemDeServicoEnum.FINALIZADA))
+                                .thenReturn(List.of(os));
+
+                Duration resultado = service.calcularTempoMedioExecucao();
+
+                assertEquals(120, resultado.toMinutes());
         }
 
 }

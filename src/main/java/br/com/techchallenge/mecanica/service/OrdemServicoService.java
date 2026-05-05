@@ -1,5 +1,6 @@
 package br.com.techchallenge.mecanica.service;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,4 +26,6 @@ public interface OrdemServicoService {
     OrdemDeServicoResponseDto finalizar(UUID id);
 
     OrdemDeServicoResponseDto entregar(UUID id);
+
+    Duration calcularTempoMedioExecucao();
 }

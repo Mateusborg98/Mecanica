@@ -1,9 +1,11 @@
 package br.com.techchallenge.mecanica.entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -73,19 +75,72 @@ class OrdemDeServicoTest {
     }
 
     @Test
-    void deveCalcularValorTotal () {
+    void deveCalcularValorTotal() {
         OrdemDeServico os = new OrdemDeServico();
-        Servico servico = new Servico(UUID.randomUUID(), "Troca de óleo", new BigDecimal("20"), os);
+        Servico servico = new Servico(UUID.randomUUID(), "Troca de óleo", new BigDecimal("20"), os,
+                StatusServicoEnum.AGUARDANDO, LocalDateTime.now());
         List<Servico> servicos = new ArrayList<>();
         servicos.add(servico);
         os.setServicos(servicos);
 
         Peca peca = new Peca(UUID.randomUUID(), "Óleo", "Petronas", new BigDecimal("40"));
-        ItemOrdemDeServico itemOrdemDeServico = new ItemOrdemDeServico(UUID.randomUUID(), os, peca, 4, new BigDecimal("40"));
+        ItemOrdemDeServico itemOrdemDeServico = new ItemOrdemDeServico(UUID.randomUUID(), os, peca, 4,
+                new BigDecimal("40"));
         List<ItemOrdemDeServico> itemOrdemDeServicos = new ArrayList<>();
         itemOrdemDeServicos.add(itemOrdemDeServico);
 
         assertEquals(new BigDecimal("180"), os.calcularValorTotal(servicos, itemOrdemDeServicos));
+    }
+
+    @Test
+    void deveRetornarTrueQuandoMesmaReferencia() {
+        OrdemDeServico os = new OrdemDeServico();
+        assertEquals(os, os);
+    }
+
+    @Test
+    void deveRetornarFalseQuandoObjetoForNulo() {
+        OrdemDeServico os = new OrdemDeServico();
+        assertNotEquals(os, null);
+    }
+
+    @Test
+    void deveRetornarFalseQuandoObjetoForOutroTipo() {
+        OrdemDeServico os = new OrdemDeServico();
+        assertNotEquals(os, "ordem");
+    }
+
+    @Test
+    void deveRetornarFalseQuandoIdForNulo() {
+        OrdemDeServico os1 = new OrdemDeServico();
+        OrdemDeServico os2 = new OrdemDeServico();
+
+        assertNotEquals(os1, os2);
+    }
+
+    @Test
+    void deveRetornarTrueQuandoIdsForemIguais() {
+        UUID id = UUID.randomUUID();
+
+        OrdemDeServico os1 = new OrdemDeServico();
+        os1.setId(id);
+
+        OrdemDeServico os2 = new OrdemDeServico();
+        os2.setId(id);
+
+        assertEquals(os1, os2);
+        assertEquals(os1.hashCode(), os2.hashCode());
+    }
+
+    @Test
+    void deveRetornarFalseQuandoIdsForemDiferentes() {
+        OrdemDeServico os1 = new OrdemDeServico();
+        os1.setId(UUID.randomUUID());
+
+        OrdemDeServico os2 = new OrdemDeServico();
+        os2.setId(UUID.randomUUID());
+
+        assertNotEquals(os1, os2);
     }
 
 }
