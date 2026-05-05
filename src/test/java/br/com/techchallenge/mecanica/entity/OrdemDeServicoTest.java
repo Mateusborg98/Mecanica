@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
@@ -67,6 +70,22 @@ class OrdemDeServicoTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> os.adicionarPeca(peca, 0));
+    }
+
+    @Test
+    void deveCalcularValorTotal () {
+        OrdemDeServico os = new OrdemDeServico();
+        Servico servico = new Servico(UUID.randomUUID(), "Troca de óleo", new BigDecimal("20"), os);
+        List<Servico> servicos = new ArrayList<>();
+        servicos.add(servico);
+        os.setServicos(servicos);
+
+        Peca peca = new Peca(UUID.randomUUID(), "Óleo", "Petronas", new BigDecimal("40"));
+        ItemOrdemDeServico itemOrdemDeServico = new ItemOrdemDeServico(UUID.randomUUID(), os, peca, 4, new BigDecimal("40"));
+        List<ItemOrdemDeServico> itemOrdemDeServicos = new ArrayList<>();
+        itemOrdemDeServicos.add(itemOrdemDeServico);
+
+        assertEquals(new BigDecimal("180"), os.calcularValorTotal(servicos, itemOrdemDeServicos));
     }
 
 }

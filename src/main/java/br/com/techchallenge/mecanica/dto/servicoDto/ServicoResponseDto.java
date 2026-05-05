@@ -15,6 +15,10 @@ public class ServicoResponseDto {
         this.preco = preco;
     }
 
+    public ServicoResponseDto() {
+        //TODO Auto-generated constructor stub
+    }
+
     public UUID getId() {
         return id;
     }

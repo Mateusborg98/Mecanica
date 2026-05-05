@@ -135,7 +135,8 @@ public class OrdemDeServicoServiceImpl implements OrdemServicoService {
         validarStatus(os, StatusOrdemDeServicoEnum.ORCAMENTO_APROVADO);
         baixarEstoque(os);
         os.setStatus(StatusOrdemDeServicoEnum.EM_EXECUCAO);
-        return mapper.toResponse(os);
+        os.setDtInicioOs(LocalDateTime.now());
+        return mapper.toResponse(ordemRepository.save(os));
     }
 
     @Override

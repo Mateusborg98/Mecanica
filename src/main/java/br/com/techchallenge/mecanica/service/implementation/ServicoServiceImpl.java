@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class ServicoServiceImpl implements ServicoService {
 
     private final ServicoRepository repository;
-    private final ServicoMapper mapper = new ServicoMapper();
+    private final ServicoMapper mapper;
 
     @Override
     public ServicoResponseDto criar(CreateServicoRequestDto request) {
@@ -49,7 +49,7 @@ public class ServicoServiceImpl implements ServicoService {
     public ServicoResponseDto atualizar(UUID id, UpdateServicoRequestDTO request) {
         Servico servico = buscar(id);
         mapper.updateEntity(request, servico);
-        return mapper.toResponse(servico);
+        return mapper.toResponse(repository.save(servico));
     }
 
     @Override

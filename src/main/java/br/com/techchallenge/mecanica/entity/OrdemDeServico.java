@@ -89,10 +89,9 @@ public class OrdemDeServico {
         }
 
         this.servicos.add(servico);
-        calcularValorTotal();
     }
 
-    public void calcularValorTotal() {
+    public BigDecimal calcularValorTotal(List<Servico> servicos, List<ItemOrdemDeServico> itens) {
         BigDecimal total = BigDecimal.ZERO;
 
         for (Servico servico : servicos) {
@@ -104,5 +103,6 @@ public class OrdemDeServico {
                     .multiply(BigDecimal.valueOf(item.getQuantidade()));
             total = total.add(valorItem);
         }
+        return total;
     }
 }

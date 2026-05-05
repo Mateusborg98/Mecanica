@@ -121,7 +121,11 @@
 				</executions>
 				<configuration>
 					<excludes>
+						<exclude>**/controller/**</exclude>
 						<exclude>**/dto/**</exclude>
+						<exclude>**/mapper/**</exclude>
+						<exclude>**/config/**</exclude>
+            			<exclude>**/MecanicaApplication.class</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

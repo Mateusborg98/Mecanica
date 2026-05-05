@@ -24,6 +24,10 @@ public class CreateServicoRequestDto {
         this.ordemId = ordemId;
     }
 
+    public CreateServicoRequestDto() {
+        //TODO Auto-generated constructor stub
+    }
+
     public String getDescricao() {
         return descricao;
     }

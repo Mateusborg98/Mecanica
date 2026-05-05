@@ -30,7 +30,7 @@ public class Operador {
     private String email;
 
     @Column(nullable = false)
-    private Integer contato;
+    private String contato;
 
     @Override
     public boolean equals(Object o) {

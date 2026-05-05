@@ -20,6 +20,10 @@ public class UpdateServicoRequestDTO {
         this.valor = valor;
     }
 
+    public UpdateServicoRequestDTO() {
+        //TODO Auto-generated constructor stub
+    }
+
     public String getDescricao() {
         return descricao;
     }

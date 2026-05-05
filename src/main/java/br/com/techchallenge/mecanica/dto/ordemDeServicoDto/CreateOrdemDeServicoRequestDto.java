@@ -24,6 +24,15 @@ public class CreateOrdemDeServicoRequestDto {
 
     private List<Servico> servicos;
 
+    public CreateOrdemDeServicoRequestDto(UUID clienteId, UUID veiculoId, UUID operadorId,
+            List<ItemOrdemDeServico> itens, List<Servico> servicos) {
+        this.clienteId = clienteId;
+        this.veiculoId = veiculoId;
+        this.operadorId = operadorId;
+        this.itens = itens;
+        this.servicos = servicos;
+    }
+
     public UUID getClienteId() {
         return clienteId;
     }

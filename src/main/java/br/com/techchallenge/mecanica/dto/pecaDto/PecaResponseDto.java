@@ -17,6 +17,9 @@ public class PecaResponseDto {
         this.preco = preco;
     }
 
+    public PecaResponseDto() {
+    }
+
     public UUID getId() {
         return id;
     }
