@@ -44,7 +44,7 @@ public class OrdemDeServicoResponseDto {
     }
 
     public OrdemDeServicoResponseDto() {
-        //TODO Auto-generated constructor stub
+        
     }
 
     public UUID getId() {
@@ -127,5 +127,4 @@ public class OrdemDeServicoResponseDto {
         this.valorTotalOs = valorTotalOs;
     }
 
-    
 }
