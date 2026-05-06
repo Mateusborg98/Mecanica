@@ -52,6 +52,9 @@ public class OrdemDeServico {
     @OneToMany(mappedBy = "ordemDeServico", cascade = CascadeType.PERSIST)
     private List<Servico> servicos = new ArrayList<>();
 
+    @Column(nullable = false)
+    private BigDecimal valorTotalOs;
+
     public void adicionarPeca(Peca peca, int quantidade) {
         if (peca == null) {
             throw new IllegalArgumentException("Peça não pode ser nula");
@@ -91,14 +94,14 @@ public class OrdemDeServico {
         this.servicos.add(servico);
     }
 
-    public BigDecimal calcularValorTotal(List<Servico> servicos, List<ItemOrdemDeServico> itens) {
+    public BigDecimal calcularValorTotal() {
         BigDecimal total = BigDecimal.ZERO;
 
-        for (Servico servico : servicos) {
+        for (Servico servico : this.servicos) {
             total = total.add(servico.getPreco());
         }
 
-        for (ItemOrdemDeServico item : itens) {
+        for (ItemOrdemDeServico item : this.itens) {
             BigDecimal valorItem = item.getValorUnitario()
                     .multiply(BigDecimal.valueOf(item.getQuantidade()));
             total = total.add(valorItem);

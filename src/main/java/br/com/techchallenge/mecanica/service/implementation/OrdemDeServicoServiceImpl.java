@@ -25,7 +25,6 @@ import br.com.techchallenge.mecanica.repository.OrdemDeServicoRepository;
 import br.com.techchallenge.mecanica.repository.PecaRepository;
 import br.com.techchallenge.mecanica.repository.VeiculoRepository;
 import br.com.techchallenge.mecanica.service.OrdemServicoService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -86,14 +85,6 @@ public class OrdemDeServicoServiceImpl implements OrdemServicoService {
     }
 
     @Override
-    public OrdemDeServicoResponseDto enviarParaAprovacao(UUID id) {
-        OrdemDeServico os = buscar(id);
-        validarStatus(os, StatusOrdemDeServicoEnum.EM_DIAGNOSTICO);
-        os.setStatus(StatusOrdemDeServicoEnum.AGUARDANDO_APROVACAO);
-        return mapper.toResponse(ordemRepository.save(os));
-    }
-
-    @Override
     public OrdemDeServicoResponseDto finalizar(UUID id) {
         OrdemDeServico os = buscar(id);
         validarStatus(os, StatusOrdemDeServicoEnum.EM_EXECUCAO);
@@ -124,26 +115,26 @@ public class OrdemDeServicoServiceImpl implements OrdemServicoService {
 
     @Override
     public OrdemDeServicoResponseDto aprovarOrcamento(UUID ordemId) {
-        OrdemDeServico os = buscarOrdem(ordemId);
-        validarStatus(os, StatusOrdemDeServicoEnum.EM_DIAGNOSTICO);
-        os.setStatus(StatusOrdemDeServicoEnum.ORCAMENTO_APROVADO);
-        return mapper.toResponse(os);
-    }
-
-    @Override
-    public OrdemDeServicoResponseDto iniciarExecucao(UUID ordemId) {
-        OrdemDeServico os = buscarOrdem(ordemId);
-        validarStatus(os, StatusOrdemDeServicoEnum.ORCAMENTO_APROVADO);
+        OrdemDeServico os = buscar(ordemId);
+        validarStatus(os, StatusOrdemDeServicoEnum.AGUARDANDO_APROVACAO);
         baixarEstoque(os);
         os.setStatus(StatusOrdemDeServicoEnum.EM_EXECUCAO);
         os.setDtInicioOs(LocalDateTime.now());
-        return mapper.toResponse(ordemRepository.save(os));
+        return mapper.toResponse(os);
+    }
+
+    public OrdemDeServicoResponseDto enviarOrcamento(UUID ordemId) {
+        OrdemDeServico os = buscar(ordemId);
+        validarStatus(os, StatusOrdemDeServicoEnum.EM_DIAGNOSTICO);
+        os.setValorTotalOs(os.calcularValorTotal());
+        os.setStatus(StatusOrdemDeServicoEnum.AGUARDANDO_APROVACAO);
+        return mapper.toResponse(os);
     }
 
     @Override
     @Transactional(readOnly = true)
     public OrdemDeServicoResponseDto buscarPorId(UUID id) {
-        return mapper.toResponse(buscarOrdem(id));
+        return mapper.toResponse(buscar(id));
     }
 
     @Override
@@ -153,11 +144,6 @@ public class OrdemDeServicoServiceImpl implements OrdemServicoService {
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
-    }
-
-    private OrdemDeServico buscarOrdem(UUID id) {
-        return ordemRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Ordem de Serviço não encontrada"));
     }
 
     private void baixarEstoque(OrdemDeServico os) {

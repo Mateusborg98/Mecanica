@@ -44,7 +44,8 @@ INSERT INTO ordem_de_servico (
   dt_inicio_os,
   dt_fim_os,
   cliente_id,
-  veiculo_id
+  veiculo_id,
+  valor_total_os
 )
 VALUES (
   gen_random_uuid(),
@@ -52,7 +53,8 @@ VALUES (
   NOW() - INTERVAL '2 hours',
   NULL,
   (SELECT id FROM cliente WHERE cpf_cnpj = '12345678901'),
-  (SELECT id FROM veiculo WHERE placa = 'ABC1D23')
+  (SELECT id FROM veiculo WHERE placa = 'ABC1D23'),
+  920.00
 );
 
 INSERT INTO servico (

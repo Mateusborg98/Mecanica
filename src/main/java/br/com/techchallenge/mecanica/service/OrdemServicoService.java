@@ -17,11 +17,7 @@ public interface OrdemServicoService {
 
     OrdemDeServicoResponseDto iniciarDiagnostico(UUID id);
 
-    OrdemDeServicoResponseDto enviarParaAprovacao(UUID id);
-
     OrdemDeServicoResponseDto aprovarOrcamento(UUID id);
-
-    OrdemDeServicoResponseDto iniciarExecucao(UUID id);
 
     OrdemDeServicoResponseDto finalizar(UUID id);
 

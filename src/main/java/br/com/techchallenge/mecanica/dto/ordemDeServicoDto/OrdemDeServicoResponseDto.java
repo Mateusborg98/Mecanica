@@ -1,5 +1,6 @@
 package br.com.techchallenge.mecanica.dto.ordemDeServicoDto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -25,16 +26,11 @@ public class OrdemDeServicoResponseDto {
     private List<ItemOrdemDeServico> itens;
     private List<Servico> servicos;
 
-    public OrdemDeServicoResponseDto(
-            UUID id,
-            StatusOrdemDeServicoEnum status,
-            LocalDateTime dtInicioOs,
-            LocalDateTime dtFimOs,
-            Cliente cliente,
-            Veiculo veiculo,
-            OperadorResumoDto operador,
-            List<ItemOrdemDeServico> itens,
-            List<Servico> servicos) {
+    private BigDecimal valorTotalOs;
+
+    public OrdemDeServicoResponseDto(UUID id, Enum<StatusOrdemDeServicoEnum> status, LocalDateTime dtInicioOs,
+            LocalDateTime dtFimOs, Cliente cliente, Veiculo veiculo, OperadorResumoDto operador,
+            List<ItemOrdemDeServico> itens, List<Servico> servicos, BigDecimal valorTotalOs) {
         this.id = id;
         this.status = status;
         this.dtInicioOs = dtInicioOs;
@@ -44,6 +40,11 @@ public class OrdemDeServicoResponseDto {
         this.operador = operador;
         this.itens = itens;
         this.servicos = servicos;
+        this.valorTotalOs = valorTotalOs;
+    }
+
+    public OrdemDeServicoResponseDto() {
+        //TODO Auto-generated constructor stub
     }
 
     public UUID getId() {
@@ -118,4 +119,13 @@ public class OrdemDeServicoResponseDto {
         this.servicos = servicos;
     }
 
+    public BigDecimal getValorTotalOs() {
+        return valorTotalOs;
+    }
+
+    public void setValorTotalOs(BigDecimal valorTotalOs) {
+        this.valorTotalOs = valorTotalOs;
+    }
+
+    
 }

@@ -6,7 +6,5 @@ public enum StatusOrdemDeServicoEnum {
     AGUARDANDO_APROVACAO,
     EM_EXECUCAO,
     FINALIZADA,
-    ENTREGUE,
-    ORCAMENTO_APROVADO,
-    ORCAMENTO_REPROVADO
+    ENTREGUE
 }

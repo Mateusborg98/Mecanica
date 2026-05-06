@@ -33,7 +33,7 @@ public class OrdemDeServicoMapper {
         OrdemDeServicoResponseDto dto = 
             new OrdemDeServicoResponseDto(os.getId(), os.getStatus(), os.getDtInicioOs(), 
                 os.getDtFimOs(), os.getCliente(), os.getVeiculo(), null, os.getItens(), 
-                os.getServicos());
+                os.getServicos(), os.getValorTotalOs());
         return dto;
     }
 

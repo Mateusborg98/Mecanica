@@ -44,11 +44,6 @@ public class OrdemDeServicoController {
         return service.listar();
     }
 
-    @PostMapping("/{id}/enviar-aprovacao")
-    public OrdemDeServicoResponseDto enviarParaAprovacao(@PathVariable UUID id) {
-        return service.enviarParaAprovacao(id);
-    }
-
     @PostMapping("/{id}/iniciar-diagnostico")
     public OrdemDeServicoResponseDto iniciarDiagnostico(@PathVariable UUID id) {
         return service.iniciarDiagnostico(id);
@@ -57,11 +52,6 @@ public class OrdemDeServicoController {
     @PostMapping("/{id}/aprovar-orcamento")
     public OrdemDeServicoResponseDto aprovarOrcamento(@PathVariable UUID id) {
         return service.aprovarOrcamento(id);
-    }
-
-    @PostMapping("/{id}/iniciar-execucao")
-    public OrdemDeServicoResponseDto iniciarExecucao(@PathVariable UUID id) {
-        return service.iniciarExecucao(id);
     }
 
     @PostMapping("/{id}/finalizar")

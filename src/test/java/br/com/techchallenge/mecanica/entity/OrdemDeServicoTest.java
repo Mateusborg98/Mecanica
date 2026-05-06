@@ -77,19 +77,27 @@ class OrdemDeServicoTest {
     @Test
     void deveCalcularValorTotal() {
         OrdemDeServico os = new OrdemDeServico();
-        Servico servico = new Servico(UUID.randomUUID(), "Troca de óleo", new BigDecimal("20"), os,
-                StatusServicoEnum.AGUARDANDO, LocalDateTime.now());
-        List<Servico> servicos = new ArrayList<>();
-        servicos.add(servico);
-        os.setServicos(servicos);
 
-        Peca peca = new Peca(UUID.randomUUID(), "Óleo", "Petronas", new BigDecimal("40"));
-        ItemOrdemDeServico itemOrdemDeServico = new ItemOrdemDeServico(UUID.randomUUID(), os, peca, 4,
-                new BigDecimal("40"));
-        List<ItemOrdemDeServico> itemOrdemDeServicos = new ArrayList<>();
-        itemOrdemDeServicos.add(itemOrdemDeServico);
+        Servico servico1 = new Servico();
+        servico1.setPreco(new BigDecimal("100"));
 
-        assertEquals(new BigDecimal("180"), os.calcularValorTotal(servicos, itemOrdemDeServicos));
+        Servico servico2 = new Servico();
+        servico2.setPreco(new BigDecimal("80"));
+
+        Peca peca = new Peca();
+        peca.setPreco(new BigDecimal("10"));
+
+        ItemOrdemDeServico item = new ItemOrdemDeServico();
+        item.setPeca(peca);
+        item.setQuantidade(2);
+        item.setValorUnitario(peca.getPreco());
+
+        os.getServicos().addAll(List.of(servico1, servico2));
+        os.getItens().add(item);
+
+        BigDecimal total = os.calcularValorTotal();
+
+        assertEquals(new BigDecimal("200"), total);
     }
 
     @Test
