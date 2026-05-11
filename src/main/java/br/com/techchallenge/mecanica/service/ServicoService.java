@@ -1,6 +1,5 @@
 package br.com.techchallenge.mecanica.service;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,5 +19,4 @@ public interface ServicoService {
 
     void deletar(UUID id);
 
-    Duration calcularTempoMedioPorServico(String descricao);
 }

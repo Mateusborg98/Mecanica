@@ -27,6 +27,8 @@ public class VeiculoServiceImpl implements VeiculoService {
     private final VeiculoMapper mapper = new VeiculoMapper();
     private final ClienteRepository clienteRepository;
 
+    @Override
+    @Transactional
     public VeiculoResponseDto criar(CreateVeiculoRequestDto request) {
 
         if (repository.existsByPlaca(request.getPlaca())) {
@@ -40,12 +42,12 @@ public class VeiculoServiceImpl implements VeiculoService {
         return mapper.toResponse(repository.save(veiculo));
     }
 
-    @Transactional(readOnly = true)
+    @Override
     public VeiculoResponseDto buscarPorId(UUID id) {
         return mapper.toResponse(buscar(id));
     }
 
-    @Transactional(readOnly = true)
+    @Override
     public List<VeiculoResponseDto> listar() {
         return repository.findAll()
                 .stream()
@@ -53,6 +55,8 @@ public class VeiculoServiceImpl implements VeiculoService {
                 .toList();
     }
 
+    @Override
+    @Transactional
     public VeiculoResponseDto atualizar(UUID id, UpdateVeiculoRequestDto request) {
         Veiculo veiculo = buscar(id);
         mapper.updateEntity(request, veiculo);
@@ -61,6 +65,8 @@ public class VeiculoServiceImpl implements VeiculoService {
 
     }
 
+    @Override
+    @Transactional
     public void deletar(UUID id) {
         repository.delete(buscar(id));
     }

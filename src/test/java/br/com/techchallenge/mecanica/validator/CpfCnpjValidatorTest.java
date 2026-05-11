@@ -20,10 +20,6 @@ class CpfCnpjValidatorTest {
         context = mock(ConstraintValidatorContext.class);
     }
 
-    // ==============================
-    // CPF
-    // ==============================
-
     @Test
     void deveAceitarCpfValido() {
         // CPF válido: 529.982.247-25
@@ -37,10 +33,6 @@ class CpfCnpjValidatorTest {
         assertFalse(valido);
     }
 
-    // ==============================
-    // CNPJ
-    // ==============================
-
     @Test
     void deveAceitarCnpjValido() {
         // CNPJ válido: 11.444.777/0001-61
@@ -53,10 +45,6 @@ class CpfCnpjValidatorTest {
         boolean valido = validator.isValid("99999999999999", context);
         assertFalse(valido);
     }
-
-    // ==============================
-    // Casos gerais
-    // ==============================
 
     @Test
     void naoDeveAceitarDocumentoComTamanhoInvalido() {

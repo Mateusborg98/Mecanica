@@ -12,10 +12,6 @@ import br.com.techchallenge.mecanica.exception.RegraNegocioException;
 
 class EstoqueTest {
 
-    // =========================
-    // registrarEntrada
-    // =========================
-
     @Test
     void deveRegistrarEntradaComSucesso() {
         Estoque estoque = new Estoque();
@@ -31,7 +27,7 @@ class EstoqueTest {
         Estoque estoque = new Estoque();
         estoque.setQuantidade(10);
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(RegraNegocioException.class,
                 () -> estoque.registrarEntrada(0));
     }
 
@@ -40,13 +36,9 @@ class EstoqueTest {
         Estoque estoque = new Estoque();
         estoque.setQuantidade(10);
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(RegraNegocioException.class,
                 () -> estoque.registrarEntrada(-3));
     }
-
-    // =========================
-    // registrarSaida
-    // =========================
 
     @Test
     void deveRegistrarSaidaComSucesso() {
@@ -63,7 +55,7 @@ class EstoqueTest {
         Estoque estoque = new Estoque();
         estoque.setQuantidade(10);
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(RegraNegocioException.class,
                 () -> estoque.registrarSaida(0));
     }
 
@@ -72,7 +64,7 @@ class EstoqueTest {
         Estoque estoque = new Estoque();
         estoque.setQuantidade(10);
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(RegraNegocioException.class,
                 () -> estoque.registrarSaida(-2));
     }
 
@@ -84,10 +76,6 @@ class EstoqueTest {
         assertThrows(RegraNegocioException.class,
                 () -> estoque.registrarSaida(10));
     }
-
-    // =========================
-    // equals / hashCode
-    // =========================
 
     @Test
     void estoquesComMesmoIdDevemSerIguais() {

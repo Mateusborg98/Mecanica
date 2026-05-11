@@ -5,7 +5,15 @@ import java.util.UUID;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateItemOrdemDeServicoRequestDto {
 
     @NotNull
@@ -18,36 +26,5 @@ public class CreateItemOrdemDeServicoRequestDto {
     @NotNull
     @Positive
     private BigDecimal valorUnitario;
-
-    public CreateItemOrdemDeServicoRequestDto(@NotNull UUID pecaId, @NotNull @Positive Integer quantidade,
-            @NotNull @Positive BigDecimal valorUnitario) {
-        this.pecaId = pecaId;
-        this.quantidade = quantidade;
-        this.valorUnitario = valorUnitario;
-    }
-
-    public UUID getPecaId() {
-        return pecaId;
-    }
-
-    public void setPecaId(UUID pecaId) {
-        this.pecaId = pecaId;
-    }
-
-    public Integer getQuantidade() {
-        return quantidade;
-    }
-
-    public void setQuantidade(Integer quantidade) {
-        this.quantidade = quantidade;
-    }
-
-    public BigDecimal getValorUnitario() {
-        return valorUnitario;
-    }
-
-    public void setValorUnitario(BigDecimal valorUnitario) {
-        this.valorUnitario = valorUnitario;
-    }
 
 }

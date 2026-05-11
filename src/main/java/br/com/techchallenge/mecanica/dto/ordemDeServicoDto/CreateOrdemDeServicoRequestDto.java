@@ -1,76 +1,25 @@
 package br.com.techchallenge.mecanica.dto.ordemDeServicoDto;
 
-import java.util.List;
-import java.util.UUID;
+import br.com.techchallenge.mecanica.annotation.CpfCnpj;
+import br.com.techchallenge.mecanica.annotation.PlacaValida;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import br.com.techchallenge.mecanica.entity.ItemOrdemDeServico;
-import br.com.techchallenge.mecanica.entity.Servico;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateOrdemDeServicoRequestDto {
 
-    @NotNull
-    private UUID clienteId;
+    @NotBlank
+    @CpfCnpj
+    private String cpfCnpj;
 
-    @NotNull
-    private UUID veiculoId;
-
-    @NotNull
-    private UUID operadorId;
-
-    @NotEmpty
-    private List<ItemOrdemDeServico> itens;
-
-    private List<Servico> servicos;
-
-    public CreateOrdemDeServicoRequestDto(UUID clienteId, UUID veiculoId, UUID operadorId,
-            List<ItemOrdemDeServico> itens, List<Servico> servicos) {
-        this.clienteId = clienteId;
-        this.veiculoId = veiculoId;
-        this.operadorId = operadorId;
-        this.itens = itens;
-        this.servicos = servicos;
-    }
-
-    public UUID getClienteId() {
-        return clienteId;
-    }
-
-    public void setClienteId(UUID clienteId) {
-        this.clienteId = clienteId;
-    }
-
-    public UUID getVeiculoId() {
-        return veiculoId;
-    }
-
-    public void setVeiculoId(UUID veiculoId) {
-        this.veiculoId = veiculoId;
-    }
-
-    public UUID getOperadorId() {
-        return operadorId;
-    }
-
-    public void setOperadorId(UUID operadorId) {
-        this.operadorId = operadorId;
-    }
-
-    public List<ItemOrdemDeServico> getItens() {
-        return itens;
-    }
-
-    public void setItens(List<ItemOrdemDeServico> itens) {
-        this.itens = itens;
-    }
-
-    public List<Servico> getServicos() {
-        return servicos;
-    }
-
-    public void setServicos(List<Servico> servicos) {
-        this.servicos = servicos;
-    }
+    @NotBlank
+    @PlacaValida
+    private String placa;
 
 }

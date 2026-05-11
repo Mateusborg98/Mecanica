@@ -1,17 +1,17 @@
 package br.com.techchallenge.mecanica.service;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,22 +23,30 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import br.com.techchallenge.mecanica.dto.ordemDeServicoDto.AddServicoPecaOrdemDeServicoDto;
 import br.com.techchallenge.mecanica.dto.ordemDeServicoDto.CreateOrdemDeServicoRequestDto;
 import br.com.techchallenge.mecanica.dto.ordemDeServicoDto.OrdemDeServicoResponseDto;
+import br.com.techchallenge.mecanica.dto.ordemDeServicoDto.PecaRequestDto;
+import br.com.techchallenge.mecanica.dto.ordemDeServicoDto.ServicoRequestDto;
+import br.com.techchallenge.mecanica.dto.ordemDeServicoDto.TempoMedioServicoResponseDto;
 import br.com.techchallenge.mecanica.entity.Cliente;
-import br.com.techchallenge.mecanica.entity.Estoque;
-import br.com.techchallenge.mecanica.entity.ItemOrdemDeServico;
+import br.com.techchallenge.mecanica.entity.Operador;
 import br.com.techchallenge.mecanica.entity.OrdemDeServico;
 import br.com.techchallenge.mecanica.entity.Peca;
+import br.com.techchallenge.mecanica.entity.Servico;
+import br.com.techchallenge.mecanica.entity.ServicoOrdemDeServico;
 import br.com.techchallenge.mecanica.entity.StatusOrdemDeServicoEnum;
+import br.com.techchallenge.mecanica.entity.StatusServicoEnum;
 import br.com.techchallenge.mecanica.entity.Veiculo;
 import br.com.techchallenge.mecanica.exception.RegraNegocioException;
 import br.com.techchallenge.mecanica.mapper.OrdemDeServicoMapper;
 import br.com.techchallenge.mecanica.repository.ClienteRepository;
-import br.com.techchallenge.mecanica.repository.EstoqueRepository;
+import br.com.techchallenge.mecanica.repository.OperadorRepository;
 import br.com.techchallenge.mecanica.repository.OrdemDeServicoRepository;
 import br.com.techchallenge.mecanica.repository.PecaRepository;
+import br.com.techchallenge.mecanica.repository.ServicoRepository;
 import br.com.techchallenge.mecanica.repository.VeiculoRepository;
+import br.com.techchallenge.mecanica.security.UsuarioAutenticadoService;
 import br.com.techchallenge.mecanica.service.implementation.OrdemDeServicoServiceImpl;
 import br.com.techchallenge.mecanica.service.implementation.PecaServiceImpl;
 
@@ -50,208 +58,419 @@ class OrdemDeServicoServiceImplTest {
 
         @Mock
         private OrdemDeServicoRepository ordemRepository;
+
         @Mock
         private ClienteRepository clienteRepository;
+
         @Mock
         private VeiculoRepository veiculoRepository;
+
         @Mock
         private PecaRepository pecaRepository;
+
         @Mock
-        private EstoqueRepository estoqueRepository;
+        private ServicoRepository servicoRepository;
+
+        @Mock
+        private OperadorRepository operadorRepository;
+
+        @Mock
+        private PecaServiceImpl pecaService;
+
+        @Mock
+        private UsuarioAutenticadoService autenticadoService;
+
         @Mock
         private OrdemDeServicoMapper mapper;
-        @Mock
-        private PecaServiceImpl pecaServiceImpl;
 
+        private UUID id;
         private OrdemDeServico os;
-        private Cliente cliente;
-        private Veiculo veiculo;
 
         @BeforeEach
         void setup() {
-                cliente = new Cliente();
-                cliente.setId(UUID.randomUUID());
 
-                veiculo = new Veiculo();
-                veiculo.setId(UUID.randomUUID());
+                id = UUID.randomUUID();
 
                 os = new OrdemDeServico();
-                os.setId(UUID.randomUUID());
-                os.setCliente(cliente);
-                os.setVeiculo(veiculo);
+                os.setId(id);
                 os.setStatus(StatusOrdemDeServicoEnum.RECEBIDA);
-                os.setDtInicioOs(LocalDateTime.now());
-
+                os.setPecas(new ArrayList<>());
+                os.setServicos(new ArrayList<>());
         }
 
-        // ---------------- CRIAR ----------------
-
         @Test
-        void deveCriarOrdemDeServico() {
-                CreateOrdemDeServicoRequestDto dto = mock(CreateOrdemDeServicoRequestDto.class);
-                when(dto.getClienteId()).thenReturn(cliente.getId());
-                when(dto.getVeiculoId()).thenReturn(veiculo.getId());
+        void deveCriarOrdemServico() {
 
-                when(clienteRepository.findById(cliente.getId())).thenReturn(Optional.of(cliente));
-                when(veiculoRepository.findById(veiculo.getId())).thenReturn(Optional.of(veiculo));
+                CreateOrdemDeServicoRequestDto request = new CreateOrdemDeServicoRequestDto();
+
+                request.setCpfCnpj("12345678900");
+                request.setPlaca("ABC1234");
+
+                Cliente cliente = new Cliente();
+                Veiculo veiculo = new Veiculo();
+                Operador operador = new Operador();
+
+                OrdemDeServicoResponseDto response = new OrdemDeServicoResponseDto();
+
+                when(clienteRepository.findByCpfCnpj(any()))
+                                .thenReturn(Optional.of(cliente));
+
+                when(veiculoRepository.findByPlaca(any()))
+                                .thenReturn(Optional.of(veiculo));
+
+                when(autenticadoService.getMatricula())
+                                .thenReturn(1);
+
+                when(operadorRepository.findByMatricula(any()))
+                                .thenReturn(Optional.of(operador));
+
+                when(ordemRepository.save(any()))
+                                .thenReturn(os);
 
                 when(mapper.toResponse(any()))
-                                .thenReturn(new OrdemDeServicoResponseDto());
+                                .thenReturn(response);
 
-                OrdemDeServicoResponseDto response = service.criar(dto);
+                OrdemDeServicoResponseDto resultado = service.criar(request);
 
-                assertNotNull(response);
+                assertNotNull(resultado);
+
                 verify(ordemRepository).save(any());
         }
 
         @Test
-        void deveLancarErroAoCriarComClienteInexistente() {
-                CreateOrdemDeServicoRequestDto dto = mock(CreateOrdemDeServicoRequestDto.class);
-                when(dto.getClienteId()).thenReturn(UUID.randomUUID());
+        void deveLancarExcecaoQuandoClienteNaoEncontrado() {
 
-                when(clienteRepository.findById(any())).thenReturn(Optional.empty());
+                CreateOrdemDeServicoRequestDto request = new CreateOrdemDeServicoRequestDto();
 
-                assertThrows(RegraNegocioException.class, () -> service.criar(dto));
+                request.setCpfCnpj("123");
+
+                when(clienteRepository.findByCpfCnpj(any()))
+                                .thenReturn(Optional.empty());
+
+                assertThrows(
+                                RegraNegocioException.class,
+                                () -> service.criar(request));
         }
-
-        // ---------------- ADICIONAR PEÇA ----------------
-
-        @Test
-        void deveAdicionarPecaNaOs() {
-                Peca peca = new Peca();
-                peca.setId(UUID.randomUUID());
-                peca.setPreco(BigDecimal.TEN);
-
-                when(ordemRepository.findById(os.getId())).thenReturn(Optional.of(os));
-                when(pecaRepository.findById(peca.getId())).thenReturn(Optional.of(peca));
-
-                assertDoesNotThrow(() -> service.adicionarPecaNaOs(os.getId(), peca.getId(), 2));
-        }
-
-        // ---------------- STATUS ----------------
 
         @Test
         void deveIniciarDiagnostico() {
+
+                OrdemDeServicoResponseDto response = new OrdemDeServicoResponseDto();
+
+                when(ordemRepository.findById(id))
+                                .thenReturn(Optional.of(os));
+
+                when(ordemRepository.save(any()))
+                                .thenReturn(os);
+
                 when(mapper.toResponse(any()))
-                                .thenReturn(new OrdemDeServicoResponseDto());
-                when(ordemRepository.findById(os.getId())).thenReturn(Optional.of(os));
+                                .thenReturn(response);
 
-                OrdemDeServicoResponseDto response = service.iniciarDiagnostico(os.getId());
+                OrdemDeServicoResponseDto resultado = service.iniciarDiagnostico(id);
 
-                assertNotNull(response);
-                assertEquals(StatusOrdemDeServicoEnum.EM_DIAGNOSTICO, os.getStatus());
+                assertNotNull(resultado);
+
+                assertEquals(
+                                StatusOrdemDeServicoEnum.EM_DIAGNOSTICO,
+                                os.getStatus());
         }
 
         @Test
-        void deveEnviarOrcamento() {
-                os.setStatus(StatusOrdemDeServicoEnum.EM_DIAGNOSTICO);
-                when(ordemRepository.findById(os.getId())).thenReturn(Optional.of(os));
-                when(mapper.toResponse(any()))
-                                .thenReturn(new OrdemDeServicoResponseDto());
+        void deveLancarExcecaoAoIniciarDiagnosticoComStatusInvalido() {
 
-                OrdemDeServicoResponseDto response = service.enviarOrcamento(os.getId());
+                os.setStatus(StatusOrdemDeServicoEnum.FINALIZADA);
 
-                assertNotNull(response);
-                assertEquals(StatusOrdemDeServicoEnum.AGUARDANDO_APROVACAO, os.getStatus());
-                assertNotNull(os.getValorTotalOs());
+                when(ordemRepository.findById(id))
+                                .thenReturn(Optional.of(os));
+
+                assertThrows(
+                                RegraNegocioException.class,
+                                () -> service.iniciarDiagnostico(id));
         }
 
         @Test
         void deveAprovarOrcamento() {
+
                 os.setStatus(StatusOrdemDeServicoEnum.AGUARDANDO_APROVACAO);
 
-                ItemOrdemDeServico item = mock(ItemOrdemDeServico.class);
-                Peca peca = mock(Peca.class);
-                Estoque estoque = mock(Estoque.class);
+                ServicoOrdemDeServico servico = new ServicoOrdemDeServico();
 
-                when(item.getQuantidade()).thenReturn(1);
-                when(item.getPeca()).thenReturn(peca);
-                when(estoque.getQuantidade()).thenReturn(5);
+                servico.setStatus(StatusServicoEnum.AGUARDANDO);
 
-                os.getItens().add(item);
+                os.setServicos(List.of(servico));
 
-                when(ordemRepository.findById(os.getId())).thenReturn(Optional.of(os));
-                when(estoqueRepository.findByPeca(peca)).thenReturn(Optional.of(estoque));
+                OrdemDeServicoResponseDto response = new OrdemDeServicoResponseDto();
+
+                when(ordemRepository.findById(id))
+                                .thenReturn(Optional.of(os));
+
+                when(ordemRepository.save(any()))
+                                .thenReturn(os);
+
                 when(mapper.toResponse(any()))
-                                .thenReturn(new OrdemDeServicoResponseDto());
+                                .thenReturn(response);
 
-                OrdemDeServicoResponseDto response = service.aprovarOrcamento(os.getId());
+                OrdemDeServicoResponseDto resultado = service.aprovarOrcamento(id);
 
-                assertEquals(StatusOrdemDeServicoEnum.EM_EXECUCAO, os.getStatus());
-                assertNotNull(response);
+                assertNotNull(resultado);
+
+                assertEquals(
+                                StatusOrdemDeServicoEnum.EM_EXECUCAO,
+                                os.getStatus());
+
+                assertEquals(
+                                StatusServicoEnum.EM_EXECUCAO,
+                                servico.getStatus());
+
+                assertNotNull(servico.getDtInicio());
         }
 
-        // ---------------- FINALIZAR / ENTREGAR ----------------
+        @Test
+        void deveNegarOrcamento() {
+
+                os.setStatus(StatusOrdemDeServicoEnum.AGUARDANDO_APROVACAO);
+
+                ServicoOrdemDeServico servico = new ServicoOrdemDeServico();
+
+                os.setServicos(List.of(servico));
+
+                OrdemDeServicoResponseDto response = new OrdemDeServicoResponseDto();
+
+                when(ordemRepository.findById(id))
+                                .thenReturn(Optional.of(os));
+
+                when(ordemRepository.save(any()))
+                                .thenReturn(os);
+
+                when(mapper.toResponse(any()))
+                                .thenReturn(response);
+
+                OrdemDeServicoResponseDto resultado = service.negarOrcamento(id);
+
+                assertNotNull(resultado);
+
+                assertEquals(
+                                StatusOrdemDeServicoEnum.EM_DIAGNOSTICO,
+                                os.getStatus());
+
+                assertEquals(
+                                StatusServicoEnum.CANCELADO,
+                                servico.getStatus());
+
+                assertNotNull(servico.getDtFim());
+        }
 
         @Test
-        void deveFinalizarOrdem() {
+        void deveFinalizarOrdemServico() {
+
                 os.setStatus(StatusOrdemDeServicoEnum.EM_EXECUCAO);
-                when(ordemRepository.findById(os.getId())).thenReturn(Optional.of(os));
+
+                ServicoOrdemDeServico servico = new ServicoOrdemDeServico();
+
+                os.setServicos(List.of(servico));
+
+                OrdemDeServicoResponseDto response = new OrdemDeServicoResponseDto();
+
+                when(ordemRepository.findById(id))
+                                .thenReturn(Optional.of(os));
+
+                when(ordemRepository.save(any()))
+                                .thenReturn(os);
 
                 when(mapper.toResponse(any()))
-                                .thenReturn(new OrdemDeServicoResponseDto());
+                                .thenReturn(response);
 
-                OrdemDeServicoResponseDto response = service.finalizar(os.getId());
+                OrdemDeServicoResponseDto resultado = service.finalizar(id);
 
-                assertEquals(StatusOrdemDeServicoEnum.FINALIZADA, os.getStatus());
-                assertNotNull(os.getDtFimOs());
-                assertNotNull(response);
+                assertNotNull(resultado);
+
+                assertEquals(
+                                StatusOrdemDeServicoEnum.FINALIZADA,
+                                os.getStatus());
+
+                assertEquals(
+                                StatusServicoEnum.FINALIZADO,
+                                servico.getStatus());
+
+                assertNotNull(servico.getDtFim());
         }
 
         @Test
-        void deveEntregarOrdem() {
-                when(mapper.toResponse(any()))
-                                .thenReturn(new OrdemDeServicoResponseDto());
+        void deveEntregarOrdemServico() {
+
                 os.setStatus(StatusOrdemDeServicoEnum.FINALIZADA);
-                when(ordemRepository.findById(os.getId())).thenReturn(Optional.of(os));
 
-                OrdemDeServicoResponseDto response = service.entregar(os.getId());
+                OrdemDeServicoResponseDto response = new OrdemDeServicoResponseDto();
 
-                assertEquals(StatusOrdemDeServicoEnum.ENTREGUE, os.getStatus());
-                assertNotNull(response);
+                when(ordemRepository.findById(id))
+                                .thenReturn(Optional.of(os));
+
+                when(ordemRepository.save(any()))
+                                .thenReturn(os);
+
+                when(mapper.toResponse(any()))
+                                .thenReturn(response);
+
+                OrdemDeServicoResponseDto resultado = service.entregar(id);
+
+                assertNotNull(resultado);
+
+                assertEquals(
+                                StatusOrdemDeServicoEnum.ENTREGUE,
+                                os.getStatus());
         }
-
-        // ---------------- BUSCAR / LISTAR ----------------
 
         @Test
         void deveBuscarPorId() {
-                when(ordemRepository.findById(os.getId())).thenReturn(Optional.of(os));
+
+                OrdemDeServicoResponseDto response = new OrdemDeServicoResponseDto();
+
+                when(ordemRepository.findById(id))
+                                .thenReturn(Optional.of(os));
+
                 when(mapper.toResponse(any()))
-                                .thenReturn(new OrdemDeServicoResponseDto());
-                assertNotNull(service.buscarPorId(os.getId()));
+                                .thenReturn(response);
+
+                OrdemDeServicoResponseDto resultado = service.buscarPorId(id);
+
+                assertNotNull(resultado);
         }
 
         @Test
-        void deveListarOrdens() {
-                when(ordemRepository.findAll()).thenReturn(List.of(os));
+        void deveListarOrdensServico() {
 
-                assertEquals(1, service.listar().size());
-        }
+                OrdemDeServicoResponseDto response = new OrdemDeServicoResponseDto();
 
-        // ---------------- TEMPO MÉDIO ----------------
-
-        @Test
-        void deveCalcularTempoMedioExecucao() {
-                OrdemDeServico os = new OrdemDeServico();
-                os.setStatus(StatusOrdemDeServicoEnum.FINALIZADA);
-                os.setDtInicioOs(LocalDateTime.now().minusHours(4));
-                os.setDtFimOs(LocalDateTime.now());
-
-                when(ordemRepository.findByStatus(StatusOrdemDeServicoEnum.FINALIZADA))
+                when(ordemRepository.findAll())
                                 .thenReturn(List.of(os));
 
-                Duration resultado = service.calcularTempoMedioExecucao();
+                when(mapper.toResponse(any()))
+                                .thenReturn(response);
 
-                assertEquals(4, resultado.toHours());
+                List<OrdemDeServicoResponseDto> resultado = service.listar();
+
+                assertEquals(1, resultado.size());
         }
 
         @Test
-        void deveRetornarZeroQuandoNaoHaFinalizadas() {
-                when(ordemRepository.findByStatus(StatusOrdemDeServicoEnum.FINALIZADA))
+        void deveCalcularTempoMedioServicos() {
+
+                OrdemDeServico ordem = new OrdemDeServico();
+
+                ordem.setStatus(StatusOrdemDeServicoEnum.FINALIZADA);
+
+                Servico servico = new Servico();
+                servico.setDescricao("Troca de óleo");
+
+                ServicoOrdemDeServico sos = new ServicoOrdemDeServico();
+
+                sos.setServico(servico);
+
+                sos.setDtInicio(
+                                LocalDateTime.now().minusMinutes(60));
+
+                sos.setDtFim(
+                                LocalDateTime.now());
+
+                ordem.setServicos(List.of(sos));
+
+                when(ordemRepository.findByStatus(
+                                StatusOrdemDeServicoEnum.FINALIZADA))
+                                .thenReturn(List.of(ordem));
+
+                List<TempoMedioServicoResponseDto> resultado = service.calcularTempoMedioServicos();
+
+                assertEquals(1, resultado.size());
+
+                assertEquals(
+                                "Troca de óleo",
+                                resultado.get(0).getServico());
+
+                assertTrue(
+                                resultado.get(0)
+                                                .getTempoMedioEmMinutos() > 0);
+        }
+
+        @Test
+        void deveRetornarListaVaziaQuandoNaoExistirServicoFinalizado() {
+
+                when(ordemRepository.findByStatus(
+                                StatusOrdemDeServicoEnum.FINALIZADA))
                                 .thenReturn(List.of());
 
-                Duration duration = service.calcularTempoMedioExecucao();
+                List<TempoMedioServicoResponseDto> resultado = service.calcularTempoMedioServicos();
 
-                assertEquals(Duration.ZERO, duration);
+                assertTrue(resultado.isEmpty());
+        }
+
+        @Test
+        void deveLancarExcecaoQuandoOsNaoEncontrada() {
+
+                when(ordemRepository.findById(id))
+                                .thenReturn(Optional.empty());
+
+                assertThrows(
+                                RegraNegocioException.class,
+                                () -> service.buscarPorId(id));
+        }
+
+        @Test
+        void naoDeveSalvarQuandoStatusInvalido() {
+
+                os.setStatus(StatusOrdemDeServicoEnum.ENTREGUE);
+
+                when(ordemRepository.findById(id))
+                                .thenReturn(Optional.of(os));
+
+                assertThrows(
+                                RegraNegocioException.class,
+                                () -> service.finalizar(id));
+
+                verify(ordemRepository, never())
+                                .save(any());
+        }
+
+        @Test
+        void deveAdicionarServicoEPeca() {
+
+                UUID pecaId = UUID.randomUUID();
+                UUID servicoId = UUID.randomUUID();
+
+                AddServicoPecaOrdemDeServicoDto request = new AddServicoPecaOrdemDeServicoDto();
+
+                PecaRequestDto pecaDto = new PecaRequestDto();
+                pecaDto.setPecaId(pecaId);
+                pecaDto.setQuantidade(1);
+
+                ServicoRequestDto servicoDto = new ServicoRequestDto();
+                servicoDto.setServicoId(servicoId);
+
+                request.setPecas(List.of(pecaDto));
+                request.setServicos(List.of(servicoDto));
+
+                Peca peca = new Peca();
+                peca.setPreco(BigDecimal.TEN);
+
+                Servico servico = new Servico();
+                servico.setPreco(BigDecimal.valueOf(50));
+
+                when(ordemRepository.findById(id))
+                                .thenReturn(Optional.of(os));
+
+                when(pecaRepository.findById(pecaId))
+                                .thenReturn(Optional.of(peca));
+
+                when(servicoRepository.findById(servicoId))
+                                .thenReturn(Optional.of(servico));
+
+                when(ordemRepository.save(any()))
+                                .thenReturn(os);
+
+                when(mapper.toResponse(any()))
+                                .thenReturn(new OrdemDeServicoResponseDto());
+
+                OrdemDeServicoResponseDto resultado = service.adicionarServicoPeca(id, request);
+
+                assertNotNull(resultado);
         }
 }

@@ -3,7 +3,15 @@ package br.com.techchallenge.mecanica.dto.clienteDto;
 import br.com.techchallenge.mecanica.annotation.CpfCnpj;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateClienteRequestDto {
 
     @NotBlank
@@ -18,45 +26,5 @@ public class CreateClienteRequestDto {
 
     @Email
     private String email;
-
-    public CreateClienteRequestDto(@NotBlank String nome, @NotBlank String cpfCnpj, @NotBlank String contato,
-            @Email String email) {
-        this.nome = nome;
-        this.cpfCnpj = cpfCnpj;
-        this.contato = contato;
-        this.email = email;
-    }
-    
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getCpfCnpj() {
-        return cpfCnpj;
-    }
-
-    public void setCpfCnpj(String cpfCnpj) {
-        this.cpfCnpj = cpfCnpj;
-    }
-
-    public String getContato() {
-        return contato;
-    }
-
-    public void setContato(String contato) {
-        this.contato = contato;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
 
 }

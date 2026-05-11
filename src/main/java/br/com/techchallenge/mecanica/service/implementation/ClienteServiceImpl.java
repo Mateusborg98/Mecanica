@@ -24,6 +24,8 @@ public class ClienteServiceImpl implements ClienteService {
     private final ClienteRepository repository;
     private final ClienteMapper mapper = new ClienteMapper();
 
+    @Override
+    @Transactional
     public ClienteResponseDto criar(CreateClienteRequestDto request) {
         if (repository.existsByCpfCnpj(request.getCpfCnpj())) {
             throw new RegraNegocioException("CPF/CNPJ já cadastrado");
@@ -33,12 +35,12 @@ public class ClienteServiceImpl implements ClienteService {
         return mapper.toResponse(repository.save(cliente));
     }
 
-    @Transactional(readOnly = true)
+    @Override
     public ClienteResponseDto buscarPorId(UUID id) {
         return mapper.toResponse(buscar(id));
     }
 
-    @Transactional(readOnly = true)
+    @Override
     public List<ClienteResponseDto> listar() {
         return repository.findAll()
                 .stream()
@@ -46,12 +48,16 @@ public class ClienteServiceImpl implements ClienteService {
                 .toList();
     }
 
+    @Override
+    @Transactional
     public ClienteResponseDto atualizar(UUID id, UpdateClienteRequestDto request) {
         Cliente cliente = buscar(id);
         mapper.updateEntity(request, cliente);
         return mapper.toResponse(cliente);
     }
 
+    @Override
+    @Transactional
     public void deletar(UUID id) {
         repository.delete(buscar(id));
     }
@@ -61,10 +67,7 @@ public class ClienteServiceImpl implements ClienteService {
                 .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado"));
     }
 
-    public boolean buscarPorCpfCnpj(CreateClienteRequestDto request) {
-        return repository.existsByCpfCnpj(request.getCpfCnpj());
-    }
-
+    @Override
     public ClienteResponseDto buscarPorCpfCnpj(String cpfCnpj) {
         Cliente cliente = repository.findByCpfCnpj(cpfCnpj)
                 .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado"));

@@ -1,133 +1,238 @@
 package br.com.techchallenge.mecanica.security;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.core.Authentication;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockFilterChain;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
+@ExtendWith(MockitoExtension.class)
 class JwtAuthenticationFilterTest {
 
+    @Mock
     private JwtService jwtService;
+
+    @InjectMocks
     private JwtAuthenticationFilter filter;
 
-    private HttpServletRequest request;
-    private HttpServletResponse response;
-    private FilterChain filterChain;
-
-    @BeforeEach
-    void setup() {
-        jwtService = mock(JwtService.class);
-        filter = new JwtAuthenticationFilter(jwtService);
-
-        request = mock(HttpServletRequest.class);
-        response = mock(HttpServletResponse.class);
-        filterChain = mock(FilterChain.class);
-
-        SecurityContextHolder.clearContext();
-    }
-
     @AfterEach
-    void cleanup() {
+    void limparContexto() {
         SecurityContextHolder.clearContext();
     }
 
-    // ======================================================
-    // Sem Authorization header
-    // ======================================================
-
     @Test
-    void deveIgnorarRequisicaoSemAuthorizationHeader() throws ServletException, IOException {
+    void deveIgnorarRequisicaoSemAuthorizationHeader()
+            throws Exception {
 
-        when(request.getHeader("Authorization"))
-                .thenReturn(null);
+        MockHttpServletRequest request =
+                new MockHttpServletRequest();
+
+        request.setServletPath("/clientes");
+
+        MockHttpServletResponse response =
+                new MockHttpServletResponse();
+
+        MockFilterChain filterChain =
+                new MockFilterChain();
 
         filter.doFilter(request, response, filterChain);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        assertNull(authentication);
-        verify(filterChain).doFilter(request, response);
+        assertNull(
+                SecurityContextHolder.getContext()
+                        .getAuthentication());
     }
 
-    // ======================================================
-    // Header inválido
-    // ======================================================
-
     @Test
-    void deveIgnorarHeaderAuthorizationInvalido() throws ServletException, IOException {
+    void deveIgnorarHeaderAuthorizationInvalido()
+            throws Exception {
 
-        when(request.getHeader("Authorization"))
-                .thenReturn("Basic abcdef");
+        MockHttpServletRequest request =
+                new MockHttpServletRequest();
+
+        request.setServletPath("/clientes");
+
+        request.addHeader(
+                "Authorization",
+                "Basic 123");
+
+        MockHttpServletResponse response =
+                new MockHttpServletResponse();
+
+        MockFilterChain filterChain =
+                new MockFilterChain();
 
         filter.doFilter(request, response, filterChain);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        assertNull(authentication);
-        verify(filterChain).doFilter(request, response);
+        assertNull(
+                SecurityContextHolder.getContext()
+                        .getAuthentication());
     }
 
-    // ======================================================
-    // Token válido
-    // ======================================================
-
     @Test
-    void deveCriarAutenticacaoQuandoTokenForValido() throws ServletException, IOException {
+    void deveCriarAutenticacaoQuandoTokenForValido()
+            throws Exception {
 
-        String token = "token.jwt.valido";
-        String username = "usuarioTeste";
+        MockHttpServletRequest request =
+                new MockHttpServletRequest();
 
-        when(request.getHeader("Authorization"))
-                .thenReturn("Bearer " + token);
-        when(jwtService.tokenValido(token))
+        request.setServletPath("/clientes");
+
+        request.addHeader(
+                "Authorization",
+                "Bearer token-valido");
+
+        MockHttpServletResponse response =
+                new MockHttpServletResponse();
+
+        MockFilterChain filterChain =
+                new MockFilterChain();
+
+        when(jwtService.extrairUsername("token-valido"))
+                .thenReturn("123");
+
+        when(jwtService.tokenValido("token-valido"))
                 .thenReturn(true);
-        when(jwtService.extrairUsername(token))
-                .thenReturn(username);
 
         filter.doFilter(request, response, filterChain);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        assertNotNull(
+                SecurityContextHolder.getContext()
+                        .getAuthentication());
 
-        assertNotNull(authentication);
-        assertEquals(username, authentication.getPrincipal());
-
-        verify(filterChain).doFilter(request, response);
+        assertEquals(
+                "123",
+                SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getName());
     }
 
-    // ======================================================
-    // Token inválido
-    // ======================================================
-
     @Test
-    void naoDeveCriarAutenticacaoQuandoTokenForInvalido() throws ServletException, IOException {
+    void naoDeveCriarAutenticacaoQuandoTokenForInvalido()
+            throws Exception {
 
-        String token = "token.jwt.invalido";
+        MockHttpServletRequest request =
+                new MockHttpServletRequest();
 
-        when(request.getHeader("Authorization"))
-                .thenReturn("Bearer " + token);
-        when(jwtService.tokenValido(token))
+        request.setServletPath("/clientes");
+
+        request.addHeader(
+                "Authorization",
+                "Bearer token-invalido");
+
+        MockHttpServletResponse response =
+                new MockHttpServletResponse();
+
+        MockFilterChain filterChain =
+                new MockFilterChain();
+
+        when(jwtService.extrairUsername("token-invalido"))
+                .thenReturn("123");
+
+        when(jwtService.tokenValido("token-invalido"))
                 .thenReturn(false);
 
         filter.doFilter(request, response, filterChain);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        assertNull(
+                SecurityContextHolder.getContext()
+                        .getAuthentication());
+    }
 
-        assertNull(authentication);
-        verify(filterChain).doFilter(request, response);
+    @Test
+    void deveIgnorarExcecaoQuandoTokenFalhar()
+            throws Exception {
+
+        MockHttpServletRequest request =
+                new MockHttpServletRequest();
+
+        request.setServletPath("/clientes");
+
+        request.addHeader(
+                "Authorization",
+                "Bearer token");
+
+        MockHttpServletResponse response =
+                new MockHttpServletResponse();
+
+        MockFilterChain filterChain =
+                new MockFilterChain();
+
+        doThrow(new RuntimeException("erro"))
+                .when(jwtService)
+                .extrairUsername("token");
+
+        assertDoesNotThrow(() ->
+                filter.doFilter(request, response, filterChain));
+
+        assertNull(
+                SecurityContextHolder.getContext()
+                        .getAuthentication());
+    }
+
+    @Test
+    void deveRetornarTrueQuandoPathForAuth() {
+
+        MockHttpServletRequest request =
+                new MockHttpServletRequest();
+
+        request.setServletPath("/auth/login");
+
+        assertTrue(filter.shouldNotFilter(request));
+    }
+
+    @Test
+    void deveRetornarTrueQuandoPathForSwagger() {
+
+        MockHttpServletRequest request =
+                new MockHttpServletRequest();
+
+        request.setServletPath("/swagger-ui/index.html");
+
+        assertTrue(filter.shouldNotFilter(request));
+    }
+
+    @Test
+    void deveRetornarTrueQuandoPathForApiDocs() {
+
+        MockHttpServletRequest request =
+                new MockHttpServletRequest();
+
+        request.setServletPath("/v3/api-docs");
+
+        assertTrue(filter.shouldNotFilter(request));
+    }
+
+    @Test
+    void deveRetornarFalseQuandoPathNaoForIgnorado() {
+
+        MockHttpServletRequest request =
+                new MockHttpServletRequest();
+
+        request.setServletPath("/clientes");
+
+        assertFalse(filter.shouldNotFilter(request));
+    }
+
+    @Test
+    void deveRetornarFalseQuandoPathForNull() {
+
+        MockHttpServletRequest request =
+                new MockHttpServletRequest();
+
+        assertFalse(filter.shouldNotFilter(request));
     }
 }

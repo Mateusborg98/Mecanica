@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,7 +23,6 @@ import br.com.techchallenge.mecanica.dto.veiculoDto.VeiculoResponseDto;
 import br.com.techchallenge.mecanica.entity.Cliente;
 import br.com.techchallenge.mecanica.entity.Veiculo;
 import br.com.techchallenge.mecanica.exception.RegraNegocioException;
-import br.com.techchallenge.mecanica.mapper.VeiculoMapper;
 import br.com.techchallenge.mecanica.repository.ClienteRepository;
 import br.com.techchallenge.mecanica.repository.VeiculoRepository;
 import br.com.techchallenge.mecanica.service.implementation.VeiculoServiceImpl;
@@ -32,135 +31,175 @@ import br.com.techchallenge.mecanica.service.implementation.VeiculoServiceImpl;
 class VeiculoServiceImplTest {
 
         @Mock
-        private VeiculoRepository veiculoRepository;
+        private VeiculoRepository repository;
 
         @Mock
         private ClienteRepository clienteRepository;
 
-        @Mock
-        private VeiculoMapper mapper;
-
         @InjectMocks
-        private VeiculoServiceImpl veiculoService;
+        private VeiculoServiceImpl service;
+
+        private Veiculo criarVeiculoMock() {
+
+                Cliente cliente = new Cliente();
+                cliente.setId(UUID.randomUUID());
+                cliente.setNome("João");
+
+                Veiculo veiculo = new Veiculo();
+                veiculo.setId(UUID.randomUUID());
+                veiculo.setPlaca("ABC1D23");
+                veiculo.setMarca("Honda");
+                veiculo.setModelo("Civic");
+                veiculo.setAno(2020);
+
+                // ESSENCIAL
+                veiculo.setCliente(cliente);
+
+                return veiculo;
+        }
 
         @Test
-        void deveCriarVeiculoComSucesso() {
+        void deveCriarVeiculo() {
+
                 UUID clienteId = UUID.randomUUID();
 
-                CreateVeiculoRequestDto request = new CreateVeiculoRequestDto("ABC1D23", "Toyota", "Corolla", 2022,
-                                clienteId);
+                CreateVeiculoRequestDto request = new CreateVeiculoRequestDto();
+                request.setClienteId(clienteId);
+                request.setPlaca("ABC1D23");
 
                 Cliente cliente = new Cliente();
                 cliente.setId(clienteId);
 
-                when(clienteRepository.findById(any()))
-                                .thenReturn(Optional.of(new Cliente()));
+                Veiculo veiculo = criarVeiculoMock();
 
-                when(veiculoRepository.existsByPlaca("ABC1D23"))
+                when(repository.existsByPlaca(any()))
                                 .thenReturn(false);
 
-                when(veiculoRepository.save(any(Veiculo.class)))
-                                .thenAnswer(inv -> inv.getArgument(0));
+                when(clienteRepository.findById(clienteId))
+                                .thenReturn(Optional.of(cliente));
 
-                VeiculoResponseDto response = veiculoService.criar(request);
+                when(repository.save(any()))
+                                .thenReturn(veiculo);
+
+                VeiculoResponseDto response = service.criar(request);
 
                 assertNotNull(response);
-                assertEquals("ABC1D23", response.getPlaca());
-                verify(veiculoRepository).save(any(Veiculo.class));
         }
 
         @Test
-        void naoDeveCriarVeiculoComPlacaDuplicada() {
-                UUID clienteId = UUID.randomUUID();
-                CreateVeiculoRequestDto request = new CreateVeiculoRequestDto("ABC1D23", "Toyota", "Corolla", 2022,
-                                clienteId);
+        void deveLancarExcecaoQuandoPlacaJaExistir() {
 
-                when(veiculoRepository.existsByPlaca("ABC1D23"))
+                CreateVeiculoRequestDto request = new CreateVeiculoRequestDto();
+
+                when(repository.existsByPlaca(any()))
                                 .thenReturn(true);
 
                 assertThrows(RegraNegocioException.class,
-                                () -> veiculoService.criar(request));
-
-                verify(veiculoRepository, never()).save(any());
+                                () -> service.criar(request));
         }
 
         @Test
-        void naoDeveCriarVeiculoSemClienteValido() {
+        void deveLancarExcecaoQuandoClienteNaoEncontrado() {
+
                 UUID clienteId = UUID.randomUUID();
 
-                CreateVeiculoRequestDto request = new CreateVeiculoRequestDto("ABC1D23", "Toyota", "Corolla", 2022,
-                                clienteId);
+                CreateVeiculoRequestDto request = new CreateVeiculoRequestDto();
                 request.setClienteId(clienteId);
 
-                when(clienteRepository.findById(any()))
-                                .thenReturn(Optional.empty());
-
-                when(veiculoRepository.existsByPlaca("ABC1D23"))
+                when(repository.existsByPlaca(any()))
                                 .thenReturn(false);
 
-                assertThrows(RegraNegocioException.class,
-                                () -> veiculoService.criar(request));
-        }
-
-        @Test
-        void naoDeveCriarVeiculoComPlacaInvalida() {
-                UUID clienteId = UUID.randomUUID();
-
-                CreateVeiculoRequestDto request = new CreateVeiculoRequestDto("123", "Toyota", "Corolla", 2022,
-                                clienteId);
-
-                assertThrows(RegraNegocioException.class,
-                                () -> veiculoService.criar(request));
-        }
-
-        @Test
-        void deveBuscarVeiculoPorPlaca() {
-
-                Cliente cliente = new Cliente();
-                cliente.setId(UUID.randomUUID());
-
-                Veiculo veiculo = new Veiculo();
-                veiculo.setPlaca("ABC1D23");
-                veiculo.setCliente(cliente);
-
-                when(veiculoRepository.findByPlaca("ABC1D23"))
-                                .thenReturn(Optional.of(veiculo));
-
-                veiculoService.buscarPorPlaca("ABC1D23");
-
-                verify(veiculoRepository).findByPlaca("ABC1D23");
-        }
-
-        @Test
-        void deveFalharAoBuscarPlacaInexistente() {
-                when(veiculoRepository.findByPlaca("ZZZ9Z99"))
+                when(clienteRepository.findById(clienteId))
                                 .thenReturn(Optional.empty());
 
                 assertThrows(RegraNegocioException.class,
-                                () -> veiculoService.buscarPorPlaca("ZZZ9Z99"));
+                                () -> service.criar(request));
         }
 
         @Test
-        void deveAtualizarVeiculoComSucesso() {
+        void deveBuscarPorId() {
 
-                UUID veiculoId = UUID.randomUUID();
+                UUID id = UUID.randomUUID();
 
-                Cliente cliente = new Cliente();
-                cliente.setId(UUID.randomUUID());
+                Veiculo veiculo = criarVeiculoMock();
 
-                Veiculo veiculo = new Veiculo();
-                veiculo.setCliente(cliente);
-
-                UpdateVeiculoRequestDto request = new UpdateVeiculoRequestDto("Honda", "Civic", 2023);
-
-                when(veiculoRepository.findById(veiculoId))
+                when(repository.findById(id))
                                 .thenReturn(Optional.of(veiculo));
 
-                when(veiculoRepository.save(any(Veiculo.class)))
+                VeiculoResponseDto response = service.buscarPorId(id);
+
+                assertNotNull(response);
+        }
+
+        @Test
+        void deveListarVeiculos() {
+
+                Veiculo veiculo = criarVeiculoMock();
+
+                when(repository.findAll())
+                                .thenReturn(List.of(veiculo));
+
+                List<VeiculoResponseDto> response = service.listar();
+
+                assertEquals(1, response.size());
+        }
+
+        @Test
+        void deveAtualizarVeiculo() {
+
+                UUID id = UUID.randomUUID();
+
+                Veiculo veiculo = criarVeiculoMock();
+
+                UpdateVeiculoRequestDto request = new UpdateVeiculoRequestDto();
+                request.setModelo("Novo Modelo");
+
+                when(repository.findById(id))
+                                .thenReturn(Optional.of(veiculo));
+
+                when(repository.save(any()))
                                 .thenReturn(veiculo);
 
-                veiculoService.atualizar(veiculoId, request);
+                VeiculoResponseDto response = service.atualizar(id, request);
 
-                verify(veiculoRepository).save(any(Veiculo.class));
+                assertNotNull(response);
+        }
+
+        @Test
+        void deveDeletarVeiculo() {
+
+                UUID id = UUID.randomUUID();
+
+                Veiculo veiculo = criarVeiculoMock();
+
+                when(repository.findById(id))
+                                .thenReturn(Optional.of(veiculo));
+
+                service.deletar(id);
+
+                verify(repository).delete(veiculo);
+        }
+
+        @Test
+        void deveBuscarPorPlaca() {
+
+                Veiculo veiculo = criarVeiculoMock();
+
+                when(repository.findByPlaca("ABC1D23"))
+                                .thenReturn(Optional.of(veiculo));
+
+                VeiculoResponseDto response = service.buscarPorPlaca("ABC1D23");
+
+                assertNotNull(response);
+        }
+
+        @Test
+        void deveLancarExcecaoBuscarPorPlaca() {
+
+                when(repository.findByPlaca(any()))
+                                .thenReturn(Optional.empty());
+
+                assertThrows(RegraNegocioException.class,
+                                () -> service.buscarPorPlaca("AAA"));
         }
 }

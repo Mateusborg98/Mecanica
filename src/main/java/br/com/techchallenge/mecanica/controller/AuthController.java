@@ -1,11 +1,13 @@
 package br.com.techchallenge.mecanica.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.techchallenge.mecanica.dto.loginDto.LoginRequestDto;
+import br.com.techchallenge.mecanica.dto.loginDto.CreateLoginRequestDto;
 import br.com.techchallenge.mecanica.security.JwtService;
 import lombok.RequiredArgsConstructor;
 
@@ -14,16 +16,31 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 
-    @PostMapping("/login")
-    public String login(@RequestBody LoginRequestDto request) {
+    private final JwtService jwtService;
 
-        // MVP: usuário fixo
+    @PostMapping("/login")
+    public ResponseEntity<String> login(
+            @RequestBody CreateLoginRequestDto request) {
+
+        /*
+         * MVP TEMPORÁRIO
+         */
         if ("admin".equals(request.getUsername())
                 && "123".equals(request.getPassword())) {
 
-            return JwtService.gerarToken(request.getUsername());
+            /*
+             * matrícula do operador mockado
+             */
+            Integer matricula = 1;
+
+            String token = jwtService.gerarToken(
+                    matricula.toString(),
+                    "ADMIN");
+
+            return ResponseEntity.ok(token);
         }
 
-        throw new RuntimeException("Usuário ou senha inválidos");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body("Usuário ou senha inválidos");
     }
 }

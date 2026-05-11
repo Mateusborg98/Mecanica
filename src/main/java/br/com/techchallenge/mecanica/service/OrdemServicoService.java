@@ -1,11 +1,12 @@
 package br.com.techchallenge.mecanica.service;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
+import br.com.techchallenge.mecanica.dto.ordemDeServicoDto.AddServicoPecaOrdemDeServicoDto;
 import br.com.techchallenge.mecanica.dto.ordemDeServicoDto.CreateOrdemDeServicoRequestDto;
 import br.com.techchallenge.mecanica.dto.ordemDeServicoDto.OrdemDeServicoResponseDto;
+import br.com.techchallenge.mecanica.dto.ordemDeServicoDto.TempoMedioServicoResponseDto;
 
 public interface OrdemServicoService {
 
@@ -19,9 +20,13 @@ public interface OrdemServicoService {
 
     OrdemDeServicoResponseDto aprovarOrcamento(UUID id);
 
+    OrdemDeServicoResponseDto negarOrcamento(UUID id);
+
     OrdemDeServicoResponseDto finalizar(UUID id);
 
     OrdemDeServicoResponseDto entregar(UUID id);
 
-    Duration calcularTempoMedioExecucao();
+    OrdemDeServicoResponseDto adicionarServicoPeca(UUID id, AddServicoPecaOrdemDeServicoDto dto);
+
+    List<TempoMedioServicoResponseDto> calcularTempoMedioServicos();
 }

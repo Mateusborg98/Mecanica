@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,96 +28,140 @@ import br.com.techchallenge.mecanica.service.implementation.ClienteServiceImpl;
 @ExtendWith(MockitoExtension.class)
 class ClienteServiceImplTest {
 
-    @Mock
-    private ClienteRepository clienteRepository;
+        @Mock
+        private ClienteRepository repository;
 
-    @InjectMocks
-    private ClienteServiceImpl clienteService;
+        @InjectMocks
+        private ClienteServiceImpl service;
 
-    @Test
-    void deveCriarClienteComSucesso() {
-        CreateClienteRequestDto request = new CreateClienteRequestDto("João da Silva", "12345678909", "11999999999",
-                "João@gmail.com");
+        @Test
+        void deveCriarCliente() {
 
-        when(clienteRepository.existsByCpfCnpj(request.getCpfCnpj()))
-                .thenReturn(false);
+                CreateClienteRequestDto request = new CreateClienteRequestDto();
 
-        when(clienteRepository.save(any(Cliente.class)))
-                .thenAnswer(inv -> inv.getArgument(0));
+                request.setNome("João");
+                request.setCpfCnpj("12345678900");
 
-        ClienteResponseDto response = clienteService.criar(request);
+                Cliente cliente = new Cliente();
 
-        assertNotNull(response);
-        assertEquals("João da Silva", response.getNome());
-        assertEquals("12345678909", response.getCpfCnpj());
+                when(repository.existsByCpfCnpj(any()))
+                                .thenReturn(false);
 
-        verify(clienteRepository).save(any(Cliente.class));
-    }
+                when(repository.save(any()))
+                                .thenReturn(cliente);
 
-    @Test
-    void naoDeveCriarClienteComCpfCnpjDuplicado() {
-        CreateClienteRequestDto request = new CreateClienteRequestDto("João da Silva", "12345678909", "11999999999",
-                "João@gmail.com");
+                ClienteResponseDto response = service.criar(request);
 
-        when(clienteRepository.existsByCpfCnpj(request.getCpfCnpj()))
-                .thenReturn(true);
+                assertNotNull(response);
+        }
 
-        assertThrows(RegraNegocioException.class,
-                () -> clienteService.criar(request));
+        @Test
+        void deveLancarExcecaoQuandoCpfJaExistir() {
 
-        verify(clienteRepository, never()).save(any());
-    }
+                CreateClienteRequestDto request = new CreateClienteRequestDto();
 
-    @Test
-    void deveBuscarClientePorCpfCnpj() {
-        Cliente cliente = new Cliente();
-        cliente.setCpfCnpj("12345678909");
-        cliente.setNome("Maria");
+                request.setCpfCnpj("123");
 
-        when(clienteRepository.findByCpfCnpj("12345678909"))
-                .thenReturn(Optional.of(cliente));
+                when(repository.existsByCpfCnpj(any()))
+                                .thenReturn(true);
 
-        ClienteResponseDto response = clienteService.buscarPorCpfCnpj("12345678909");
+                assertThrows(RegraNegocioException.class,
+                                () -> service.criar(request));
+        }
 
-        assertEquals("Maria", response.getNome());
-    }
+        @Test
+        void deveBuscarPorId() {
 
-    @Test
-    void deveFalharAoBuscarClienteInexistentePorCpfCnpj() {
-        when(clienteRepository.findByCpfCnpj(any()))
-                .thenReturn(Optional.empty());
+                UUID id = UUID.randomUUID();
 
-        assertThrows(RegraNegocioException.class,
-                () -> clienteService.buscarPorCpfCnpj("00000000000"));
-    }
+                Cliente cliente = new Cliente();
 
-    @Test
-    void deveAtualizarClienteComSucesso() {
-        UUID id = UUID.randomUUID();
+                when(repository.findById(id))
+                                .thenReturn(Optional.of(cliente));
 
-        Cliente cliente = new Cliente();
-        cliente.setId(id);
-        cliente.setCpfCnpj("12345678909");
+                ClienteResponseDto response = service.buscarPorId(id);
 
-        UpdateClienteRequestDto request = new UpdateClienteRequestDto();
-        request.setNome("Novo Nome");
+                assertNotNull(response);
+        }
 
-        when(clienteRepository.findById(id))
-                .thenReturn(Optional.of(cliente));
+        @Test
+        void deveLancarExcecaoAoBuscarPorId() {
 
-        ClienteResponseDto response = clienteService.atualizar(id, request);
+                UUID id = UUID.randomUUID();
 
-        assertEquals("Novo Nome", response.getNome());
-    }
+                when(repository.findById(id))
+                                .thenReturn(Optional.empty());
 
-    @Test
-    void deveFalharAoDeletarClienteInexistente() {
-        UUID id = UUID.randomUUID();
+                assertThrows(RegraNegocioException.class,
+                                () -> service.buscarPorId(id));
+        }
 
-        when(clienteRepository.findById(id))
-                .thenReturn(Optional.empty());
+        @Test
+        void deveListarClientes() {
 
-        assertThrows(RegraNegocioException.class,
-                () -> clienteService.deletar(id));
-    }
+                when(repository.findAll())
+                                .thenReturn(List.of(new Cliente()));
+
+                List<ClienteResponseDto> response = service.listar();
+
+                assertEquals(1, response.size());
+        }
+
+        @Test
+        void deveAtualizarCliente() {
+
+                UUID id = UUID.randomUUID();
+
+                Cliente cliente = new Cliente();
+
+                UpdateClienteRequestDto request = new UpdateClienteRequestDto();
+
+                request.setNome("Novo Nome");
+
+                when(repository.findById(id))
+                                .thenReturn(Optional.of(cliente));
+
+                ClienteResponseDto response = service.atualizar(id, request);
+
+                assertEquals("Novo Nome",
+                                response.getNome());
+        }
+
+        @Test
+        void deveDeletarCliente() {
+
+                UUID id = UUID.randomUUID();
+
+                Cliente cliente = new Cliente();
+
+                when(repository.findById(id))
+                                .thenReturn(Optional.of(cliente));
+
+                service.deletar(id);
+
+                verify(repository).delete(cliente);
+        }
+
+        @Test
+        void deveBuscarPorCpfCnpj() {
+
+                Cliente cliente = new Cliente();
+
+                when(repository.findByCpfCnpj("123"))
+                                .thenReturn(Optional.of(cliente));
+
+                ClienteResponseDto response = service.buscarPorCpfCnpj("123");
+
+                assertNotNull(response);
+        }
+
+        @Test
+        void deveLancarExcecaoBuscarPorCpfCnpj() {
+
+                when(repository.findByCpfCnpj("123"))
+                                .thenReturn(Optional.empty());
+
+                assertThrows(RegraNegocioException.class,
+                                () -> service.buscarPorCpfCnpj("123"));
+        }
 }

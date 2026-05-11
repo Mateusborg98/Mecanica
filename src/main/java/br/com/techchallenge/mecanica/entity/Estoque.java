@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,28 +25,12 @@ public class Estoque {
     @GeneratedValue
     private UUID id;
 
-    @OneToOne(optional = false)
+    @OneToOne
+    @JoinColumn(name = "peca_id")
     private Peca peca;
 
     @Column(nullable = false)
     private Integer quantidade;
-
-    public void registrarEntrada(int qtd) {
-        if (qtd <= 0) {
-            throw new IllegalArgumentException("Quantidade inválida");
-        }
-        this.quantidade += qtd;
-    }
-
-    public void registrarSaida(int qtd) {
-        if (qtd <= 0) {
-            throw new IllegalArgumentException("Quantidade inválida");
-        }
-        if (qtd > this.quantidade) {
-            throw new RegraNegocioException("Estoque insuficiente");
-        }
-        this.quantidade -= qtd;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -61,4 +46,20 @@ public class Estoque {
         return getClass().hashCode();
     }
 
+    public void registrarEntrada(int qtd) {
+        if (qtd <= 0) {
+            throw new RegraNegocioException("Quantidade inválida");
+        }
+        this.quantidade += qtd;
+    }
+
+    public void registrarSaida(int qtd) {
+        if (qtd <= 0) {
+            throw new RegraNegocioException("Quantidade inválida");
+        }
+        if (qtd > this.quantidade) {
+            throw new RegraNegocioException("Estoque insuficiente");
+        }
+        this.quantidade -= qtd;
+    }
 }

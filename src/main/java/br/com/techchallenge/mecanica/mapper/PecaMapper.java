@@ -12,6 +12,7 @@ public class PecaMapper {
 
     public Peca toEntity(CreatePecaRequestDto dto) {
         Peca peca = new Peca();
+        peca.setMarca(dto.getMarca());
         peca.setNome(dto.getNome());
         peca.setPreco(dto.getPreco());
         return peca;
@@ -19,6 +20,7 @@ public class PecaMapper {
 
     public void updateEntity(UpdatePecaRequestDto dto, Peca entity) {
         entity.setNome(dto.getNome());
+        entity.setMarca(dto.getMarca());
         entity.setPreco(dto.getPreco());
     }
 

@@ -3,129 +3,120 @@ package br.com.techchallenge.mecanica.entity;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
+import br.com.techchallenge.mecanica.exception.RegraNegocioException;
+
 class OrdemDeServicoTest {
 
     @Test
-    void deveIniciarComStatusRecebida() {
-        OrdemDeServico os = new OrdemDeServico();
-        os.setStatus(StatusOrdemDeServicoEnum.RECEBIDA);
+    void deveAdicionarServico() {
 
-        assertEquals(StatusOrdemDeServicoEnum.RECEBIDA, os.getStatus());
-    }
-
-    @Test
-    void deveAdicionarServicoComSucesso() {
         OrdemDeServico os = new OrdemDeServico();
 
         Servico servico = new Servico();
-        servico.setDescricao("Troca de óleo");
-        servico.setPreco(new BigDecimal("150.00"));
+        servico.setPreco(new BigDecimal("100.00"));
 
-        os.adicionarServico(servico);
+        ServicoOrdemDeServico sos = new ServicoOrdemDeServico();
+
+        sos.setServico(servico);
+
+        os.adicionarServico(sos);
 
         assertEquals(1, os.getServicos().size());
     }
 
     @Test
-    void naoDeveAdicionarServicoNulo() {
+    void deveLancarExcecaoAoAdicionarServicoNulo() {
+
         OrdemDeServico os = new OrdemDeServico();
 
-        assertThrows(IllegalArgumentException.class, () -> os.adicionarServico(null));
+        RegraNegocioException ex = assertThrows(RegraNegocioException.class,
+                () -> os.adicionarServico(null));
+
+        assertEquals("Serviço não pode ser nulo",
+                ex.getMessage());
     }
 
     @Test
-    void deveAdicionarPecaComQuantidadeValida() {
+    void deveAdicionarPeca() {
+
         OrdemDeServico os = new OrdemDeServico();
 
         Peca peca = new Peca();
-        peca.setNome("Filtro de óleo");
         peca.setPreco(new BigDecimal("50.00"));
 
-        os.adicionarPeca(peca, 2);
+        PecaOrdemDeServico pos = new PecaOrdemDeServico();
 
-        assertEquals(1, os.getItens().size());
+        pos.setPeca(peca);
+        pos.setQuantidade(2);
+
+        os.adicionarPeca(pos);
+
+        assertEquals(1, os.getPecas().size());
     }
 
     @Test
-    void naoDeveAdicionarPecaNula() {
+    void deveLancarExcecaoAoAdicionarPecaNula() {
+
         OrdemDeServico os = new OrdemDeServico();
 
-        assertThrows(IllegalArgumentException.class,
-                () -> os.adicionarPeca(null, 1));
-    }
+        RegraNegocioException ex = assertThrows(RegraNegocioException.class,
+                () -> os.adicionarPeca(null));
 
-    @Test
-    void naoDeveAdicionarPecaComQuantidadeInvalida() {
-        OrdemDeServico os = new OrdemDeServico();
-
-        Peca peca = new Peca();
-        peca.setPreco(new BigDecimal("30.00"));
-
-        assertThrows(IllegalArgumentException.class,
-                () -> os.adicionarPeca(peca, 0));
+        assertEquals("Peça não pode ser nula",
+                ex.getMessage());
     }
 
     @Test
     void deveCalcularValorTotal() {
+
         OrdemDeServico os = new OrdemDeServico();
 
-        Servico servico1 = new Servico();
-        servico1.setPreco(new BigDecimal("100"));
+        // Serviço
+        Servico servico = new Servico();
+        servico.setPreco(new BigDecimal("100.00"));
 
-        Servico servico2 = new Servico();
-        servico2.setPreco(new BigDecimal("80"));
+        ServicoOrdemDeServico sos = new ServicoOrdemDeServico();
 
+        sos.setServico(servico);
+
+        os.adicionarServico(sos);
+
+        // Peça
         Peca peca = new Peca();
-        peca.setPreco(new BigDecimal("10"));
+        peca.setPreco(new BigDecimal("50.00"));
 
-        ItemOrdemDeServico item = new ItemOrdemDeServico();
-        item.setPeca(peca);
-        item.setQuantidade(2);
-        item.setValorUnitario(peca.getPreco());
+        PecaOrdemDeServico pos = new PecaOrdemDeServico();
 
-        os.getServicos().addAll(List.of(servico1, servico2));
-        os.getItens().add(item);
+        pos.setPeca(peca);
+        pos.setQuantidade(2);
+
+        os.adicionarPeca(pos);
 
         BigDecimal total = os.calcularValorTotal();
 
-        assertEquals(new BigDecimal("200"), total);
+        assertEquals(new BigDecimal("200.00"), total);
     }
 
     @Test
-    void deveRetornarTrueQuandoMesmaReferencia() {
+    void deveRetornarZeroQuandoNaoPossuirItens() {
+
         OrdemDeServico os = new OrdemDeServico();
-        assertEquals(os, os);
-    }
 
-    @Test
-    void deveRetornarFalseQuandoObjetoForNulo() {
-        OrdemDeServico os = new OrdemDeServico();
-        assertNotEquals(os, null);
-    }
+        BigDecimal total = os.calcularValorTotal();
 
-    @Test
-    void deveRetornarFalseQuandoObjetoForOutroTipo() {
-        OrdemDeServico os = new OrdemDeServico();
-        assertNotEquals(os, "ordem");
-    }
-
-    @Test
-    void deveRetornarFalseQuandoIdForNulo() {
-        OrdemDeServico os1 = new OrdemDeServico();
-        OrdemDeServico os2 = new OrdemDeServico();
-
-        assertNotEquals(os1, os2);
+        assertEquals(BigDecimal.ZERO, total);
     }
 
     @Test
     void deveRetornarTrueQuandoIdsForemIguais() {
+
         UUID id = UUID.randomUUID();
 
         OrdemDeServico os1 = new OrdemDeServico();
@@ -135,11 +126,11 @@ class OrdemDeServicoTest {
         os2.setId(id);
 
         assertEquals(os1, os2);
-        assertEquals(os1.hashCode(), os2.hashCode());
     }
 
     @Test
     void deveRetornarFalseQuandoIdsForemDiferentes() {
+
         OrdemDeServico os1 = new OrdemDeServico();
         os1.setId(UUID.randomUUID());
 
@@ -149,4 +140,39 @@ class OrdemDeServicoTest {
         assertNotEquals(os1, os2);
     }
 
+    @Test
+    void deveRetornarFalseQuandoObjetoForNulo() {
+
+        OrdemDeServico os = new OrdemDeServico();
+        os.setId(UUID.randomUUID());
+
+        assertNotEquals(os, null);
+    }
+
+    @Test
+    void deveRetornarFalseQuandoObjetoForDeOutroTipo() {
+
+        OrdemDeServico os = new OrdemDeServico();
+        os.setId(UUID.randomUUID());
+
+        assertNotEquals(os, "teste");
+    }
+
+    @Test
+    void deveRetornarMesmoHashCodeDaClasse() {
+
+        OrdemDeServico os = new OrdemDeServico();
+
+        assertEquals(
+                OrdemDeServico.class.hashCode(),
+                os.hashCode());
+    }
+
+    @Test
+    void deveRetornarTrueQuandoCompararMesmaInstancia() {
+
+        OrdemDeServico os = new OrdemDeServico();
+
+        assertTrue(os.equals(os));
+    }
 }

@@ -1,29 +1,23 @@
 package br.com.techchallenge.mecanica.dto.estoqueDto;
 
-import java.util.UUID;
-
+import br.com.techchallenge.mecanica.entity.Peca;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateEstoqueRequestDto {
 
-    @NotNull
-    private UUID pecaId;
+    private Peca peca;
 
     @NotNull
     @Positive
     private Integer quantidade;
 
-    public CreateEstoqueRequestDto(UUID pecaId, Integer quantidade) {
-        this.pecaId = pecaId;
-        this.quantidade = quantidade;
-    }
-
-    public UUID getPecaId() {
-        return pecaId;
-    }
-
-    public Integer getQuantidade() {
-        return quantidade;
-    }
 }

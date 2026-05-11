@@ -1,7 +1,10 @@
 package br.com.techchallenge.mecanica.config;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,32 +19,46 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        private final JwtAuthenticationFilter jwtFilter;
+    private final JwtAuthenticationFilter jwtFilter;
 
-        @Bean
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http)
+            throws Exception {
 
-                http
-                                .csrf(csrf -> csrf.disable())
-                                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .authorizeHttpRequests(auth -> auth
-                                                // Swagger liberado
-                                                .requestMatchers(
-                                                                "/cliente/ordens-servico/*",
-                                                                "/cliente/ordens-servico/*/status",
-                                                                "/swagger-ui/**",
-                                                                "/v3/api-docs/**",
-                                                                "/swagger-ui.html")
-                                                .permitAll()
+        http
 
-                                                // Login liberado
-                                                .requestMatchers("/auth/login").permitAll()
+                .csrf(csrf -> csrf.disable())
 
-                                                // Demais endpoints exigem auth
-                                                .anyRequest().authenticated())
-                                .addFilterBefore(jwtFilter,
-                                                UsernamePasswordAuthenticationFilter.class);
+                .cors(withDefaults())
 
-                return http.build();
-        }
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS))
+
+                .authorizeHttpRequests(auth -> auth
+
+                        .requestMatchers(HttpMethod.OPTIONS, "/**")
+                        .permitAll()
+
+                        .requestMatchers(
+                                "/auth/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**")
+                        .permitAll()
+
+                        .requestMatchers(
+                                "/ordens-servico/**",
+                                "/cliente/ordens-servico/**")
+                        .authenticated()
+
+                        .anyRequest()
+                        .authenticated())
+
+                .addFilterBefore(
+                        jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 }

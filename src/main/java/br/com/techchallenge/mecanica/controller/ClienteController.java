@@ -18,8 +18,11 @@ import br.com.techchallenge.mecanica.dto.clienteDto.ClienteResponseDto;
 import br.com.techchallenge.mecanica.dto.clienteDto.CreateClienteRequestDto;
 import br.com.techchallenge.mecanica.dto.clienteDto.UpdateClienteRequestDto;
 import br.com.techchallenge.mecanica.service.ClienteService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Cliente", description = "Controller referente a entidade Cliente.")
 @RestController
 @RequestMapping("/clientes")
 @RequiredArgsConstructor
@@ -27,27 +30,32 @@ public class ClienteController {
 
     private final ClienteService service;
 
+    @Operation(summary = "Criar cliente")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ClienteResponseDto criar(@RequestBody CreateClienteRequestDto request) {
         return service.criar(request);
     }
 
+    @Operation(summary = "Buscar cliente por id (UUID)", hidden = true)
     @GetMapping("/id/{id}")
     public ClienteResponseDto buscarPorId(@PathVariable UUID id) {
         return service.buscarPorId(id);
     }
 
+    @Operation(summary = "Buscar cliente por CPF/CNPJ")
     @GetMapping("/cpf-cnpj/{cpfCnpj}")
     public ClienteResponseDto buscarPorCpf(@PathVariable String cpfCnpj) {
         return service.buscarPorCpfCnpj(cpfCnpj);
     }
 
+    @Operation(summary = "Listar clientes cadastrados")
     @GetMapping
     public List<ClienteResponseDto> listar() {
         return service.listar();
     }
 
+    @Operation(summary = "Atualizar cliente através do ID (UUID)")
     @PutMapping("/{id}")
     public ClienteResponseDto atualizar(
             @PathVariable UUID id,
@@ -55,6 +63,7 @@ public class ClienteController {
         return service.atualizar(id, request);
     }
 
+    @Operation(summary = "Deletar cliente através do ID (UUID)")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletar(@PathVariable UUID id) {

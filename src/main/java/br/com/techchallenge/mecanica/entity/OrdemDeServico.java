@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import br.com.techchallenge.mecanica.exception.RegraNegocioException;
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -31,46 +31,28 @@ public class OrdemDeServico {
     @GeneratedValue
     private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private StatusOrdemDeServicoEnum status;
-
-    @Column(nullable = false)
-    private LocalDateTime dtInicioOs;
-
-    private LocalDateTime dtFimOs;
-
-    @ManyToOne(optional = false)
+    @ManyToOne
     private Cliente cliente;
 
-    @ManyToOne(optional = false)
+    @ManyToOne
     private Veiculo veiculo;
 
-    @OneToMany(mappedBy = "ordemDeServico", cascade = CascadeType.PERSIST)
-    private List<ItemOrdemDeServico> itens = new ArrayList<>();
+    @ManyToOne
+    private Operador operador;
 
-    @OneToMany(mappedBy = "ordemDeServico", cascade = CascadeType.PERSIST)
-    private List<Servico> servicos = new ArrayList<>();
+    @Enumerated(EnumType.STRING)
+    private StatusOrdemDeServicoEnum status;
 
-    @Column(nullable = false)
+    private LocalDateTime dtInicioOs;
+    private LocalDateTime dtFimOs;
+
     private BigDecimal valorTotalOs;
 
-    public void adicionarPeca(Peca peca, int quantidade) {
-        if (peca == null) {
-            throw new IllegalArgumentException("Peça não pode ser nula");
-        }
-        if (quantidade <= 0) {
-            throw new IllegalArgumentException("Quantidade inválida");
-        }
+    @OneToMany(mappedBy = "ordemDeServico", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PecaOrdemDeServico> pecas = new ArrayList<>();
 
-        ItemOrdemDeServico item = new ItemOrdemDeServico();
-        item.setOrdemDeServico(this);
-        item.setPeca(peca);
-        item.setQuantidade(quantidade);
-        item.setValorUnitario(peca.getPreco());
-
-        itens.add(item);
-    }
+    @OneToMany(mappedBy = "ordemDeServico", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ServicoOrdemDeServico> servicos = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {
@@ -86,24 +68,30 @@ public class OrdemDeServico {
         return getClass().hashCode();
     }
 
-    public void adicionarServico(Servico servico) {
+    public void adicionarServico(ServicoOrdemDeServico servico) {
         if (servico == null) {
-            throw new IllegalArgumentException("Serviço não pode ser nulo");
+            throw new RegraNegocioException("Serviço não pode ser nulo");
         }
-
         this.servicos.add(servico);
+    }
+
+    public void adicionarPeca(PecaOrdemDeServico peca) {
+        if (peca == null) {
+            throw new RegraNegocioException("Peça não pode ser nula");
+        }
+        this.pecas.add(peca);
     }
 
     public BigDecimal calcularValorTotal() {
         BigDecimal total = BigDecimal.ZERO;
 
-        for (Servico servico : this.servicos) {
-            total = total.add(servico.getPreco());
+        for (ServicoOrdemDeServico servicoOrdemDeServico : this.servicos) {
+            total = total.add(servicoOrdemDeServico.getServico().getPreco());
         }
 
-        for (ItemOrdemDeServico item : this.itens) {
-            BigDecimal valorItem = item.getValorUnitario()
-                    .multiply(BigDecimal.valueOf(item.getQuantidade()));
+        for (PecaOrdemDeServico pecaOrdemDeServico : this.pecas) {
+            BigDecimal valorItem = pecaOrdemDeServico.getPeca().getPreco()
+                    .multiply(BigDecimal.valueOf(pecaOrdemDeServico.getQuantidade()));
             total = total.add(valorItem);
         }
         return total;

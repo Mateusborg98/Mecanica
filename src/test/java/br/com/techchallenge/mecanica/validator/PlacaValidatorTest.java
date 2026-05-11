@@ -20,31 +20,20 @@ class PlacaValidatorTest {
         context = mock(ConstraintValidatorContext.class);
     }
 
-    // ==========================
-    // Placas válidas
-    // ==========================
-
     @Test
     void deveAceitarPlacaAntigaValida() {
-        // Ex: ABC1234
         assertTrue(validator.isValid("ABC1234", context));
     }
 
     @Test
     void deveAceitarPlacaMercosulValida() {
-        // Ex: ABC1D23
         assertTrue(validator.isValid("ABC1D23", context));
     }
 
     @Test
     void deveAceitarPlacaComCaracteresEspeciais() {
-        // normalização: abc-1d23 -> ABC1D23
         assertTrue(validator.isValid("abc-1d23", context));
     }
-
-    // ==========================
-    // Placas inválidas
-    // ==========================
 
     @Test
     void naoDeveAceitarPlacaComFormatoInvalido() {
@@ -55,10 +44,6 @@ class PlacaValidatorTest {
     void naoDeveAceitarPlacaMuitoCurta() {
         assertFalse(validator.isValid("ABC123", context));
     }
-
-    // ==========================
-    // Casos neutros
-    // ==========================
 
     @Test
     void deveAceitarValorNull() {

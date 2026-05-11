@@ -2,6 +2,15 @@ package br.com.techchallenge.mecanica.dto.clienteDto;
 
 import java.util.UUID;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ClienteResponseDto {
 
     private UUID id;
@@ -9,35 +18,4 @@ public class ClienteResponseDto {
     private String cpfCnpj;
     private String contato;
     private String email;
-
-    public ClienteResponseDto(UUID id, String nome, String cpfCnpj, String contato, String email) {
-        this.id = id;
-        this.nome = nome;
-        this.cpfCnpj = cpfCnpj;
-        this.contato = contato;
-        this.email = email;
-    }
-
-    public ClienteResponseDto() {}
-
-    public UUID getId() {
-        return id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public String getCpfCnpj() {
-        return cpfCnpj;
-    }
-
-    public String getContato() {
-        return contato;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
 }

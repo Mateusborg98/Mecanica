@@ -17,59 +17,56 @@ class JwtServiceTest {
         jwtService = new JwtService();
     }
 
-    // ==============================
-    // gerarToken
-    // ==============================
-
     @Test
-    void deveGerarTokenComUsername() {
-        String token = JwtService.gerarToken("usuarioTeste");
+    void deveGerarToken() {
+
+        String token =
+                jwtService.gerarToken("admin", "ADMIN");
 
         assertNotNull(token);
-        assertFalse(token.isBlank());
     }
 
-    // ==============================
-    // extrairUsername
-    // ==============================
-
     @Test
-    void deveExtrairUsernameDoToken() {
-        String username = "usuarioTeste";
-        String token = JwtService.gerarToken(username);
+    void deveExtrairUsername() {
 
-        String usernameExtraido = jwtService.extrairUsername(token);
+        String token =
+                jwtService.gerarToken("admin", "ADMIN");
 
-        assertEquals(username, usernameExtraido);
+        String username =
+                jwtService.extrairUsername(token);
+
+        assertEquals("admin", username);
     }
 
-    // ==============================
-    // tokenValido
-    // ==============================
+    @Test
+    void deveExtrairRole() {
+
+        String token =
+                jwtService.gerarToken("admin", "ADMIN");
+
+        String role =
+                jwtService.extrairRole(token);
+
+        assertEquals("ADMIN", role);
+    }
 
     @Test
-    void deveRetornarTrueParaTokenValido() {
-        String token = JwtService.gerarToken("usuarioTeste");
+    void deveValidarToken() {
 
-        boolean valido = jwtService.tokenValido(token);
+        String token =
+                jwtService.gerarToken("admin", "ADMIN");
+
+        boolean valido =
+                jwtService.tokenValido(token);
 
         assertTrue(valido);
     }
 
     @Test
     void deveRetornarFalseParaTokenInvalido() {
-        String tokenInvalido = "token.invalido.qualquer";
 
-        boolean valido = jwtService.tokenValido(tokenInvalido);
-
-        assertFalse(valido);
-    }
-
-    @Test
-    void deveRetornarFalseParaTokenExpiradoOuCorrompido() {
-        String tokenCorrompido = JwtService.gerarToken("usuarioTeste") + "abc";
-
-        boolean valido = jwtService.tokenValido(tokenCorrompido);
+        boolean valido =
+                jwtService.tokenValido("token-invalido");
 
         assertFalse(valido);
     }

@@ -2,22 +2,18 @@ package br.com.techchallenge.mecanica.dto.operadorDto;
 
 import java.util.UUID;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class OperadorResumoDto {
 
     private UUID id;
     private String nome;
-
-    public OperadorResumoDto(UUID id, String nome) {
-        this.id = id;
-        this.nome = nome;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
 
 }

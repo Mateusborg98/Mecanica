@@ -1,10 +1,11 @@
 package br.com.techchallenge.mecanica.service;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,7 +32,6 @@ import br.com.techchallenge.mecanica.mapper.PecaMapper;
 import br.com.techchallenge.mecanica.repository.EstoqueRepository;
 import br.com.techchallenge.mecanica.repository.PecaRepository;
 import br.com.techchallenge.mecanica.service.implementation.PecaServiceImpl;
-import jakarta.persistence.EntityNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 class PecaServiceImplTest {
@@ -50,216 +50,301 @@ class PecaServiceImplTest {
 
         private UUID pecaId;
         private Peca peca;
-        private PecaResponseDto responseDto;
 
         @BeforeEach
         void setup() {
+
                 pecaId = UUID.randomUUID();
+
                 peca = new Peca();
-                responseDto = new PecaResponseDto();
+                peca.setId(pecaId);
+                peca.setNome("Filtro de Óleo");
+                peca.setMarca("Bosch");
+                peca.setPreco(new BigDecimal("50.00"));
         }
 
-        // =========================
-        // criar
-        // =========================
         @Test
-        void deveCriarPecaComSucesso() {
-                CreatePecaRequestDto request = new CreatePecaRequestDto("Bateria", "Moura", new BigDecimal("500"));
+        void deveCriarPeca() {
 
-                when(mapper.toEntity(request)).thenReturn(peca);
-                when(repository.save(peca)).thenReturn(peca);
-                when(mapper.toResponseDto(peca)).thenReturn(responseDto);
+                CreatePecaRequestDto request = new CreatePecaRequestDto();
+                request.setNome("Filtro");
 
-                PecaResponseDto resultado = service.criar(request);
+                PecaResponseDto responseDto = new PecaResponseDto();
 
-                assertNotNull(resultado);
+                when(mapper.toEntity(request))
+                                .thenReturn(peca);
+
+                when(repository.save(peca))
+                                .thenReturn(peca);
+
+                when(mapper.toResponseDto(peca))
+                                .thenReturn(responseDto);
+
+                PecaResponseDto response = service.criar(request);
+
+                assertNotNull(response);
+
                 verify(repository).save(peca);
         }
 
-        // =========================
-        // registrarEntradaEstoque
-        // =========================
         @Test
-        void deveRegistrarEntradaEstoqueComSucesso() {
-                Estoque estoque = mock(Estoque.class);
+        void deveRegistrarEntradaEstoque() {
 
-                when(repository.findById(pecaId)).thenReturn(Optional.of(peca));
-                when(estoqueRepository.findByPeca(peca)).thenReturn(Optional.of(estoque));
+                Estoque estoque = new Estoque();
+                estoque.setQuantidade(10);
 
-                service.registrarEntradaEstoque(pecaId, 10);
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.of(peca));
 
-                verify(estoque).registrarEntrada(10);
+                when(estoqueRepository.findByPeca(peca))
+                                .thenReturn(Optional.of(estoque));
+
+                assertDoesNotThrow(() -> service.registrarEntradaEstoque(pecaId, 5));
+
+                assertEquals(15, estoque.getQuantidade());
+
                 verify(estoqueRepository).save(estoque);
         }
 
         @Test
-        void deveFalharEntradaEstoqueQuandoPecaNaoExiste() {
-                when(repository.findById(pecaId)).thenReturn(Optional.empty());
+        void deveLancarExcecaoAoRegistrarEntradaQuandoPecaNaoExiste() {
 
-                assertThrows(IllegalArgumentException.class,
-                                () -> service.registrarEntradaEstoque(pecaId, 10));
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.empty());
+
+                assertThrows(RegraNegocioException.class,
+                                () -> service.registrarEntradaEstoque(pecaId, 5));
         }
 
-        // =========================
-        // registrarSaidaEstoque
-        // =========================
         @Test
-        void deveRegistrarSaidaEstoqueComSucesso() {
-                Estoque estoque = mock(Estoque.class);
+        void deveLancarExcecaoAoRegistrarEntradaQuandoEstoqueNaoExiste() {
 
-                when(repository.findById(pecaId)).thenReturn(Optional.of(peca));
-                when(estoqueRepository.findByPeca(peca)).thenReturn(Optional.of(estoque));
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.of(peca));
 
-                service.registrarSaidaEstoque(pecaId, 5);
+                when(estoqueRepository.findByPeca(peca))
+                                .thenReturn(Optional.empty());
 
-                verify(estoque).registrarSaida(5);
+                assertThrows(RegraNegocioException.class,
+                                () -> service.registrarEntradaEstoque(pecaId, 5));
+        }
+
+        @Test
+        void deveRegistrarSaidaEstoque() {
+
+                Estoque estoque = new Estoque();
+                estoque.setQuantidade(20);
+
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.of(peca));
+
+                when(estoqueRepository.findByPeca(peca))
+                                .thenReturn(Optional.of(estoque));
+
+                assertDoesNotThrow(() -> service.registrarSaidaEstoque(pecaId, 5));
+
+                assertEquals(15, estoque.getQuantidade());
+
                 verify(estoqueRepository).save(estoque);
         }
 
         @Test
-        void deveFalharSaidaEstoqueQuandoEstoqueNaoExiste() {
-                when(repository.findById(pecaId)).thenReturn(Optional.of(peca));
-                when(estoqueRepository.findByPeca(peca)).thenReturn(Optional.empty());
+        void deveLancarExcecaoAoRegistrarSaidaQuandoPecaNaoExiste() {
+
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.empty());
 
                 assertThrows(RegraNegocioException.class,
                                 () -> service.registrarSaidaEstoque(pecaId, 5));
         }
 
-        // =========================
-        // buscarPorId
-        // =========================
         @Test
-        void deveBuscarPecaPorId() {
-                when(repository.findById(pecaId)).thenReturn(Optional.of(peca));
-                when(mapper.toResponseDto(peca)).thenReturn(responseDto);
+        void deveLancarExcecaoAoRegistrarSaidaQuandoEstoqueNaoExiste() {
 
-                PecaResponseDto resultado = service.buscarPorId(pecaId);
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.of(peca));
 
-                assertNotNull(resultado);
+                when(estoqueRepository.findByPeca(peca))
+                                .thenReturn(Optional.empty());
+
+                assertThrows(RegraNegocioException.class,
+                                () -> service.registrarSaidaEstoque(pecaId, 5));
         }
 
         @Test
-        void deveLancarExcecaoQuandoBuscarPecaInexistente() {
-                when(repository.findById(pecaId)).thenReturn(Optional.empty());
+        void deveBuscarPecaPorId() {
 
-                assertThrows(EntityNotFoundException.class,
+                PecaResponseDto responseDto = new PecaResponseDto();
+
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.of(peca));
+
+                when(mapper.toResponseDto(peca))
+                                .thenReturn(responseDto);
+
+                PecaResponseDto response = service.buscarPorId(pecaId);
+
+                assertNotNull(response);
+        }
+
+        @Test
+        void deveLancarExcecaoAoBuscarPecaPorId() {
+
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.empty());
+
+                assertThrows(RegraNegocioException.class,
                                 () -> service.buscarPorId(pecaId));
         }
 
-        // =========================
-        // atualizar
-        // =========================
         @Test
-        void deveAtualizarPecaComSucesso() {
+        void deveAtualizarPeca() {
+
                 UpdatePecaRequestDto request = new UpdatePecaRequestDto();
+                request.setNome("Novo Nome");
 
-                when(repository.findById(pecaId)).thenReturn(Optional.of(peca));
-                when(mapper.toResponseDto(peca)).thenReturn(responseDto);
+                PecaResponseDto responseDto = new PecaResponseDto();
 
-                PecaResponseDto resultado = service.atualizar(pecaId, request);
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.of(peca));
+
+                when(mapper.toResponseDto(peca))
+                                .thenReturn(responseDto);
+
+                PecaResponseDto response = service.atualizar(pecaId, request);
+
+                assertNotNull(response);
 
                 verify(mapper).updateEntity(request, peca);
-                assertNotNull(resultado);
         }
 
-        // =========================
-        // listar
-        // =========================
+        @Test
+        void deveLancarExcecaoAoAtualizarPeca() {
+
+                UpdatePecaRequestDto request = new UpdatePecaRequestDto();
+
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.empty());
+
+                assertThrows(RegraNegocioException.class,
+                                () -> service.atualizar(pecaId, request));
+        }
+
         @Test
         void deveListarPecas() {
-                when(repository.findAll()).thenReturn(List.of(peca));
-                when(mapper.toResponseDto(peca)).thenReturn(responseDto);
 
-                List<PecaResponseDto> lista = service.listar();
+                PecaResponseDto responseDto = new PecaResponseDto();
 
-                assertEquals(1, lista.size());
+                when(repository.findAll())
+                                .thenReturn(List.of(peca));
+
+                when(mapper.toResponseDto(peca))
+                                .thenReturn(responseDto);
+
+                List<PecaResponseDto> response = service.listar();
+
+                assertEquals(1, response.size());
         }
 
-        // =========================
-        // deletar
-        // =========================
         @Test
         void deveDeletarPeca() {
-                when(repository.findById(pecaId)).thenReturn(Optional.of(peca));
+
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.of(peca));
 
                 service.deletar(pecaId);
 
                 verify(repository).delete(peca);
         }
 
-        // =========================
-        // criarEstoque
-        // =========================
         @Test
-        void deveCriarEstoqueComSucesso() {
-                CreateEstoqueRequestDto request = new CreateEstoqueRequestDto(pecaId, 10);
+        void deveLancarExcecaoAoDeletarPeca() {
 
-                when(repository.findById(pecaId)).thenReturn(Optional.of(peca));
-                when(estoqueRepository.findByPeca(peca)).thenReturn(Optional.empty());
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.empty());
 
-                service.criarEstoque(request);
+                assertThrows(RegraNegocioException.class,
+                                () -> service.deletar(pecaId));
+
+                verify(repository, never()).delete(any());
+        }
+
+        @Test
+        void deveCriarEstoque() {
+
+                CreateEstoqueRequestDto request = new CreateEstoqueRequestDto();
+
+                request.setPeca(peca);
+                request.setQuantidade(10);
+
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.of(peca));
+
+                when(estoqueRepository.findByPeca(peca))
+                                .thenReturn(Optional.empty());
+
+                assertDoesNotThrow(() -> service.criarEstoque(peca, request.getQuantidade()));
 
                 verify(estoqueRepository).save(any(Estoque.class));
         }
 
         @Test
-        void deveFalharAoCriarEstoqueComQuantidadeNegativa() {
-                CreateEstoqueRequestDto request = new CreateEstoqueRequestDto(pecaId, -1);
+        void deveLancarExcecaoQuandoQuantidadeInicialForNegativa() {
 
-                assertThrows(IllegalArgumentException.class,
-                                () -> service.criarEstoque(request));
-        }
+                CreateEstoqueRequestDto request = new CreateEstoqueRequestDto();
 
-        @Test
-        void deveFalharAoCriarEstoqueDuplicado() {
-                CreateEstoqueRequestDto request = new CreateEstoqueRequestDto(pecaId, 5);
-
-                when(repository.findById(pecaId)).thenReturn(Optional.of(peca));
-                when(estoqueRepository.findByPeca(peca)).thenReturn(Optional.of(new Estoque()));
+                request.setQuantidade(-1);
 
                 assertThrows(RegraNegocioException.class,
-                                () -> service.criarEstoque(request));
+                                () -> service.criarEstoque(peca, request.getQuantidade()));
+
+                verify(estoqueRepository, never()).save(any());
         }
 
         @Test
-        void deveFalharEntradaEstoqueQuandoEstoqueNaoExiste() {
+        void deveLancarExcecaoQuandoPecaNaoEncontradaAoCriarEstoque() {
 
-                when(repository.findById(pecaId)).thenReturn(Optional.of(peca));
-                when(estoqueRepository.findByPeca(peca)).thenReturn(Optional.empty());
+                CreateEstoqueRequestDto request = new CreateEstoqueRequestDto();
 
-                assertThrows(IllegalArgumentException.class,
-                                () -> service.registrarEntradaEstoque(pecaId, 10));
-        }
+                request.setPeca(peca);
+                request.setQuantidade(10);
 
-        @Test
-        void deveFalharSaidaEstoqueQuandoPecaNaoExiste() {
-
-                when(repository.findById(pecaId)).thenReturn(Optional.empty());
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.empty());
 
                 assertThrows(RegraNegocioException.class,
-                                () -> service.registrarSaidaEstoque(pecaId, 5));
+                                () -> service.criarEstoque(peca, request.getQuantidade()));
         }
 
         @Test
-        void deveFalharAoAtualizarQuandoPecaNaoExiste() {
+        void deveLancarExcecaoQuandoJaExisteEstoque() {
 
-                UpdatePecaRequestDto request = new UpdatePecaRequestDto();
+                CreateEstoqueRequestDto request = new CreateEstoqueRequestDto();
 
-                when(repository.findById(pecaId)).thenReturn(Optional.empty());
+                request.setPeca(peca);
+                request.setQuantidade(10);
 
-                assertThrows(EntityNotFoundException.class,
-                                () -> service.atualizar(pecaId, request));
-        }
+                Estoque estoque = new Estoque();
 
-        @Test
-        void deveFalharAoCriarEstoqueQuandoPecaNaoExiste() {
+                when(repository.findById(pecaId))
+                                .thenReturn(Optional.of(peca));
 
-                CreateEstoqueRequestDto request = new CreateEstoqueRequestDto(pecaId, 10);
-
-                when(repository.findById(pecaId)).thenReturn(Optional.empty());
+                when(estoqueRepository.findByPeca(peca))
+                                .thenReturn(Optional.of(estoque));
 
                 assertThrows(RegraNegocioException.class,
-                                () -> service.criarEstoque(request));
+                                () -> service.criarEstoque(peca, request.getQuantidade()));
         }
 
+        @Test
+        void deveLancarExcecaoAoDeletarQuandoPecaNaoEncontrada() {
+
+                UUID id = UUID.randomUUID();
+
+                when(repository.findById(id))
+                                .thenReturn(Optional.empty());
+
+                assertThrows(RegraNegocioException.class,
+                                () -> service.deletar(id));
+        }
 }

@@ -1,6 +1,5 @@
 package br.com.techchallenge.mecanica.dto.ordemDeServicoDto;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -12,12 +11,8 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrdemDeServicoResumoDto {
+public class ServicoRequestDto {
 
-    private UUID id;
-    private String status;
-    private LocalDateTime dtInicioOs;
-    private String nomeCliente;
-    private String placaVeiculo;
+    private UUID servicoId;
 
 }

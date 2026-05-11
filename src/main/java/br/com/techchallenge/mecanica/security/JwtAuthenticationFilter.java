@@ -1,10 +1,11 @@
 package br.com.techchallenge.mecanica.security;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collections;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -30,19 +31,48 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
+
             String token = authHeader.substring(7);
 
-            if (jwtService.tokenValido(token)) {
-                String username = jwtService.extrairUsername(token);
+            try {
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        username, null, List.of());
+                String matricula = jwtService.extrairUsername(token);
 
-                SecurityContextHolder.getContext()
-                        .setAuthentication(authentication);
+                if (matricula != null
+                        && SecurityContextHolder.getContext().getAuthentication() == null
+                        && jwtService.tokenValido(token)) {
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    matricula,
+                                    null,
+                                    Collections.emptyList());
+
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request));
+
+                    SecurityContextHolder.getContext()
+                            .setAuthentication(authentication);
+                }
+
+            } catch (Exception ex) {
+                // Token inválido → segue sem autenticação
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+
+        String path = request.getServletPath();
+
+        return path != null &&
+                (
+                        path.startsWith("/auth")
+                                || path.startsWith("/swagger-ui")
+                                || path.startsWith("/v3/api-docs"));
     }
 }
