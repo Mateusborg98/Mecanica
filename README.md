@@ -30,6 +30,14 @@ O projeto utiliza PostgreSQL como banco de dados principal, por ser um banco rel
 Para os testes unitários e de integração, foi utilizado o banco H2 em memória, permitindo maior velocidade na execução dos testes, isolamento do ambiente e facilidade de configuração, sem dependência de infraestrutura externa.
 Essa abordagem possibilita conciliar realismo arquitetural em produção com eficiência no desenvolvimento e garantia da qualidade de software.
 
+### Acesso ao banco de dados
+Utilizar essa credenciais:
+'''bash
+Username: postgres
+Password: admin
+Url: //localhost:3354/mecanica
+'''
+
 ## Execução do Projeto
 
 ### Pré-requisitos
