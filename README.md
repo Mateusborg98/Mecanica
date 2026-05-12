@@ -32,11 +32,11 @@ Essa abordagem possibilita conciliar realismo arquitetural em produção com efi
 
 ### Acesso ao banco de dados
 Utilizar essa credenciais:
-'''bash
+```bash
 Username: postgres
 Password: admin
 Url: //localhost:3354/mecanica
-'''
+```
 
 ## Execução do Projeto
 
