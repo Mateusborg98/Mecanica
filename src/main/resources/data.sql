@@ -1,7 +1,7 @@
 -- =========================================================
 -- CLIENTES
 -- =========================================================
-INSERT INTO cliente (id, nome, cpf_cnpj, contato, email) VALUES
+INSERT INTO clienteJpaEntity (id, nome, cpf_cnpj, contato, email) VALUES
 (gen_random_uuid(), 'João da Silva',      '12345678900', '11999999999', 'joao@email.com'),
 (gen_random_uuid(), 'Maria Oliveira',     '98765432100', '11988888888', 'maria@email.com'),
 (gen_random_uuid(), 'Carlos Pereira',     '45678912300', '11977777777', 'carlos@email.com'),
@@ -12,29 +12,29 @@ INSERT INTO cliente (id, nome, cpf_cnpj, contato, email) VALUES
 -- =========================================================
 -- VEÍCULOS
 -- =========================================================
-INSERT INTO veiculo (id, placa, marca, modelo, ano, cliente_id) VALUES
+INSERT INTO veiculoJpaEntity (id, placa, marca, modelo, ano, cliente_id) VALUES
 (gen_random_uuid(), 'ABC1D23', 'Honda',      'Civic',       2020,
- (SELECT id FROM cliente WHERE cpf_cnpj = '12345678900')),
+ (SELECT id FROM clienteJpaEntity WHERE cpf_cnpj = '12345678900')),
 
 (gen_random_uuid(), 'XYZ9Z99', 'Volkswagen', 'Gol',         2019,
- (SELECT id FROM cliente WHERE cpf_cnpj = '98765432100')),
+ (SELECT id FROM clienteJpaEntity WHERE cpf_cnpj = '98765432100')),
 
 (gen_random_uuid(), 'BRA2E45', 'Toyota',     'Corolla',     2022,
- (SELECT id FROM cliente WHERE cpf_cnpj = '45678912300')),
+ (SELECT id FROM clienteJpaEntity WHERE cpf_cnpj = '45678912300')),
 
 (gen_random_uuid(), 'CAR5F67', 'Chevrolet',  'Onix',        2021,
- (SELECT id FROM cliente WHERE cpf_cnpj = '74185296300')),
+ (SELECT id FROM clienteJpaEntity WHERE cpf_cnpj = '74185296300')),
 
 (gen_random_uuid(), 'MEC7G89', 'Hyundai',    'HB20',        2023,
- (SELECT id FROM cliente WHERE cpf_cnpj = '85274196300')),
+ (SELECT id FROM clienteJpaEntity WHERE cpf_cnpj = '85274196300')),
 
 (gen_random_uuid(), 'TOP1H11', 'Fiat',       'Argo',        2018,
- (SELECT id FROM cliente WHERE cpf_cnpj = '96385274100'));
+ (SELECT id FROM clienteJpaEntity WHERE cpf_cnpj = '96385274100'));
 
 -- =========================================================
 -- OPERADORES
 -- =========================================================
-INSERT INTO operador (
+INSERT INTO operadorJpaEntity (
     id,
     nome,
     matricula,
@@ -50,7 +50,7 @@ VALUES
 -- =========================================================
 -- PEÇAS (CATÁLOGO)
 -- =========================================================
-INSERT INTO peca (id, nome, marca, preco) VALUES
+INSERT INTO pecaJpaEntity (id, nome, marca, preco) VALUES
 (gen_random_uuid(), 'Filtro de óleo',          'Bosch',       50.00),
 (gen_random_uuid(), 'Pneu Aro 16',             'Michelin',   450.00),
 (gen_random_uuid(), 'Pastilha de freio',       'Fras-le',    180.00),
@@ -64,21 +64,21 @@ INSERT INTO peca (id, nome, marca, preco) VALUES
 -- =========================================================
 -- ESTOQUE
 -- =========================================================
-INSERT INTO estoque (id, peca_id, quantidade) VALUES
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Filtro de óleo'), 50),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Pneu Aro 16'), 20),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Pastilha de freio'), 35),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Bateria 60Ah'), 15),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Amortecedor dianteiro'), 18),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Correia dentada'), 25),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Velas de ignição'), 40),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Filtro de ar'), 45),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Óleo 5W30'), 120);
+INSERT INTO estoqueJpaEntity (id, peca_id, quantidade) VALUES
+(gen_random_uuid(), (SELECT id FROM pecaJpaEntity WHERE nome = 'Filtro de óleo'), 50),
+(gen_random_uuid(), (SELECT id FROM pecaJpaEntity WHERE nome = 'Pneu Aro 16'), 20),
+(gen_random_uuid(), (SELECT id FROM pecaJpaEntity WHERE nome = 'Pastilha de freio'), 35),
+(gen_random_uuid(), (SELECT id FROM pecaJpaEntity WHERE nome = 'Bateria 60Ah'), 15),
+(gen_random_uuid(), (SELECT id FROM pecaJpaEntity WHERE nome = 'Amortecedor dianteiro'), 18),
+(gen_random_uuid(), (SELECT id FROM pecaJpaEntity WHERE nome = 'Correia dentada'), 25),
+(gen_random_uuid(), (SELECT id FROM pecaJpaEntity WHERE nome = 'Velas de ignição'), 40),
+(gen_random_uuid(), (SELECT id FROM pecaJpaEntity WHERE nome = 'Filtro de ar'), 45),
+(gen_random_uuid(), (SELECT id FROM pecaJpaEntity WHERE nome = 'Óleo 5W30'), 120);
 
 -- =========================================================
 -- SERVIÇOS (CATÁLOGO)
 -- =========================================================
-INSERT INTO servico (id, descricao, preco) VALUES
+INSERT INTO servicoJpaEntity (id, descricao, preco) VALUES
 (gen_random_uuid(), 'Troca de óleo',              120.00),
 (gen_random_uuid(), 'Troca de pneu',              300.00),
 (gen_random_uuid(), 'Alinhamento',                150.00),
@@ -104,9 +104,9 @@ INSERT INTO ordem_de_servico (
 )
 VALUES (
     gen_random_uuid(),
-    (SELECT id FROM cliente WHERE cpf_cnpj = '12345678900'),
-    (SELECT id FROM veiculo WHERE placa = 'ABC1D23'),
-    (SELECT id FROM operador WHERE matricula = 1),
+    (SELECT id FROM clienteJpaEntity WHERE cpf_cnpj = '12345678900'),
+    (SELECT id FROM veiculoJpaEntity WHERE placa = 'ABC1D23'),
+    (SELECT id FROM operadorJpaEntity WHERE matricula = 1),
     'FINALIZADA',
     NOW() - INTERVAL '5 hours',
     NOW() - INTERVAL '2 hours',
@@ -128,9 +128,9 @@ INSERT INTO ordem_de_servico (
 )
 VALUES (
     gen_random_uuid(),
-    (SELECT id FROM cliente WHERE cpf_cnpj = '98765432100'),
-    (SELECT id FROM veiculo WHERE placa = 'XYZ9Z99'),
-    (SELECT id FROM operador WHERE matricula = 2),
+    (SELECT id FROM clienteJpaEntity WHERE cpf_cnpj = '98765432100'),
+    (SELECT id FROM veiculoJpaEntity WHERE placa = 'XYZ9Z99'),
+    (SELECT id FROM operadorJpaEntity WHERE matricula = 2),
     'EM_EXECUCAO',
     NOW() - INTERVAL '3 hours',
     NULL,
@@ -152,9 +152,9 @@ INSERT INTO ordem_de_servico (
 )
 VALUES (
     gen_random_uuid(),
-    (SELECT id FROM cliente WHERE cpf_cnpj = '45678912300'),
-    (SELECT id FROM veiculo WHERE placa = 'BRA2E45'),
-    (SELECT id FROM operador WHERE matricula = 3),
+    (SELECT id FROM clienteJpaEntity WHERE cpf_cnpj = '45678912300'),
+    (SELECT id FROM veiculoJpaEntity WHERE placa = 'BRA2E45'),
+    (SELECT id FROM operadorJpaEntity WHERE matricula = 3),
     'AGUARDANDO_APROVACAO',
     NOW() - INTERVAL '1 hour',
     NULL,
@@ -174,25 +174,25 @@ VALUES
 (
     gen_random_uuid(),
     (SELECT id FROM ordem_de_servico LIMIT 1),
-    (SELECT id FROM peca WHERE nome = 'Filtro de óleo'),
+    (SELECT id FROM pecaJpaEntity WHERE nome = 'Filtro de óleo'),
     1
 ),
 (
     gen_random_uuid(),
     (SELECT id FROM ordem_de_servico LIMIT 1),
-    (SELECT id FROM peca WHERE nome = 'Óleo 5W30'),
+    (SELECT id FROM pecaJpaEntity WHERE nome = 'Óleo 5W30'),
     4
 ),
 (
     gen_random_uuid(),
     (SELECT id FROM ordem_de_servico OFFSET 1 LIMIT 1),
-    (SELECT id FROM peca WHERE nome = 'Pastilha de freio'),
+    (SELECT id FROM pecaJpaEntity WHERE nome = 'Pastilha de freio'),
     1
 ),
 (
     gen_random_uuid(),
     (SELECT id FROM ordem_de_servico OFFSET 2 LIMIT 1),
-    (SELECT id FROM peca WHERE nome = 'Correia dentada'),
+    (SELECT id FROM pecaJpaEntity WHERE nome = 'Correia dentada'),
     1
 );
 
@@ -211,7 +211,7 @@ VALUES
 (
     gen_random_uuid(),
     (SELECT id FROM ordem_de_servico LIMIT 1),
-    (SELECT id FROM servico WHERE descricao = 'Troca de óleo'),
+    (SELECT id FROM servicoJpaEntity WHERE descricao = 'Troca de óleo'),
     'FINALIZADO',
     NOW() - INTERVAL '4 hours',
     NOW() - INTERVAL '3 hours 20 minutes'
@@ -219,7 +219,7 @@ VALUES
 (
     gen_random_uuid(),
     (SELECT id FROM ordem_de_servico LIMIT 1),
-    (SELECT id FROM servico WHERE descricao = 'Alinhamento'),
+    (SELECT id FROM servicoJpaEntity WHERE descricao = 'Alinhamento'),
     'FINALIZADO',
     NOW() - INTERVAL '3 hours',
     NOW() - INTERVAL '2 hours 20 minutes'
@@ -227,7 +227,7 @@ VALUES
 (
     gen_random_uuid(),
     (SELECT id FROM ordem_de_servico OFFSET 1 LIMIT 1),
-    (SELECT id FROM servico WHERE descricao = 'Troca de freios'),
+    (SELECT id FROM servicoJpaEntity WHERE descricao = 'Troca de freios'),
     'EM_EXECUCAO',
     NOW() - INTERVAL '2 hours',
     NULL
@@ -235,7 +235,7 @@ VALUES
 (
     gen_random_uuid(),
     (SELECT id FROM ordem_de_servico OFFSET 2 LIMIT 1),
-    (SELECT id FROM servico WHERE descricao = 'Troca de correia dentada'),
+    (SELECT id FROM servicoJpaEntity WHERE descricao = 'Troca de correia dentada'),
     'AGUARDANDO',
     NULL,
     NULL

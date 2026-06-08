@@ -7,7 +7,7 @@ API backend para gestão de ordens de serviço de uma oficina mecânica.
 - Gestão de clientes
 - Gestão de veículos
 - Gestão de serviços
-- Gestão de peças e estoque
+- Gestão de peças e estoqueJpaEntity
 - Ordem de serviço com controle de status
 - Orçamento automático
 - Aprovação de orçamento

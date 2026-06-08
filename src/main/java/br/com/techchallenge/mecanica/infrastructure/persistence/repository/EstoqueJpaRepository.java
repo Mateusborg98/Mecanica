@@ -1,0 +1,10 @@
+package br.com.techchallenge.mecanica.infrastructure.persistence.repository;
+
+import java.util.UUID;
+
+import br.com.techchallenge.mecanica.infrastructure.persistence.entity.EstoqueJpaEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface EstoqueJpaRepository extends JpaRepository<EstoqueJpaEntity, UUID> {
+
+}
