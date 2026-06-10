@@ -31,9 +31,7 @@ public class ClienteController {
     @Operation(summary = "Atualizar cliente")
     public ResponseEntity<ClienteResponse> atualizar(@PathVariable UUID id, @RequestBody AtualizarClienteRequest request) {
 
-        Cliente cliente = atualizarClienteUseCase.executar(id, request);
-
-        ClienteResponse clienteResponse = clienteMapper.toResponse(cliente);
+        ClienteResponse clienteResponse = atualizarClienteUseCase.executar(id, request);
 
         return ResponseEntity.ok(clienteResponse);
     }

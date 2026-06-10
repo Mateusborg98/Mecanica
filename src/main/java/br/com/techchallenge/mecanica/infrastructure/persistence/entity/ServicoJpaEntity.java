@@ -36,7 +36,7 @@ public class ServicoJpaEntity {
             return true;
         if (!(o instanceof ServicoJpaEntity other))
             return false;
-        return id != null && id.equals(other.id);
+        return id != null && id.equals(other.getId());
     }
 
     @Override

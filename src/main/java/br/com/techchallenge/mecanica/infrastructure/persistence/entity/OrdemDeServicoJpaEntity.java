@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 import br.com.techchallenge.mecanica.domain.enums.StatusOrdemDeServicoEnum;
-import br.com.techchallenge.mecanica.domain.exception.RegraNegocioException;
-import br.com.techchallenge.mecanica.domain.pecaordemdeservico.PecaOrdemDeServico;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -52,9 +50,11 @@ public class OrdemDeServicoJpaEntity {
 
     private BigDecimal valorTotalOs;
 
+    @Builder.Default
     @OneToMany(mappedBy = "ordemDeServico", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PecaOrdemDeServicoJpaEntity> pecas = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "ordemDeServico", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ServicoOrdemDeServicoJpaEntity> servicos = new ArrayList<>();
 

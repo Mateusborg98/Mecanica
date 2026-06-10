@@ -42,7 +42,7 @@ public class PecaOrdemDeServicoJpaEntity {
             return true;
         if (!(o instanceof PecaOrdemDeServicoJpaEntity other))
             return false;
-        return id != null && id.equals(other.id);
+        return id != null && id.equals(other.getId());
     }
 
     @Override

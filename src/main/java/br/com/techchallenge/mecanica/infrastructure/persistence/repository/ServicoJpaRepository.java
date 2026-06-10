@@ -5,6 +5,6 @@ import java.util.UUID;
 import br.com.techchallenge.mecanica.infrastructure.persistence.entity.ServicoJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ServicoRepository extends JpaRepository<ServicoJpaEntity, UUID> {
+public interface ServicoJpaRepository extends JpaRepository<ServicoJpaEntity, UUID> {
 
 }

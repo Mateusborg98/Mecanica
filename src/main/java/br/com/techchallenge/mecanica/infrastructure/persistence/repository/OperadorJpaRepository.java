@@ -6,7 +6,7 @@ import java.util.UUID;
 import br.com.techchallenge.mecanica.infrastructure.persistence.entity.OperadorJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface OperadorRepository extends JpaRepository<OperadorJpaEntity, UUID> {
+public interface OperadorJpaRepository extends JpaRepository<OperadorJpaEntity, UUID> {
 
     Optional<OperadorJpaEntity> findByMatricula(Integer matricula);
     

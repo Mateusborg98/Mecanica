@@ -3,12 +3,14 @@ package br.com.techchallenge.mecanica.domain.operador;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Operador {
@@ -24,7 +26,7 @@ public class Operador {
             return true;
         if (!(o instanceof Operador other))
             return false;
-        return id != null && id.equals(other.id);
+        return id != null && id.equals(other.getId());
     }
 
     @Override

@@ -31,9 +31,9 @@ public class EstoqueGatewayImpl implements EstoqueGateway {
     }
 
     @Override
-    public Optional<Estoque> buscarPorPecaId(UUID id) {
+    public Optional<Estoque> buscarEstoquePorPecaId(UUID id) {
 
-        return repository.findById(id).map(mapper::toDomain);
+        return repository.findByPecaJpaEntityId(id).map(mapper::toDomain);
     }
 
     @Override

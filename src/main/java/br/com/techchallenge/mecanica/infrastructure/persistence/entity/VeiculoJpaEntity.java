@@ -42,6 +42,7 @@ public class VeiculoJpaEntity {
     @ManyToOne(optional = false)
     private ClienteJpaEntity clienteJpaEntity;
 
+    @Builder.Default
     @OneToMany(mappedBy = "veiculo")
     private List<OrdemDeServicoJpaEntity> ordemDeServicoJpaEntities = new ArrayList<>();
 
@@ -51,7 +52,7 @@ public class VeiculoJpaEntity {
             return true;
         if (!(o instanceof VeiculoJpaEntity other))
             return false;
-        return id != null && id.equals(other.id);
+        return id != null && id.equals(other.getId());
     }
 
     @Override

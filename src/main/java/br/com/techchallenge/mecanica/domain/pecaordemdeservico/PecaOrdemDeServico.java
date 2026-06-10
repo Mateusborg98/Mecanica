@@ -2,7 +2,6 @@ package br.com.techchallenge.mecanica.domain.pecaordemdeservico;
 
 import java.util.UUID;
 
-import br.com.techchallenge.mecanica.domain.ordemdeservico.OrdemDeServico;
 import br.com.techchallenge.mecanica.domain.peca.Peca;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,7 +25,7 @@ public class PecaOrdemDeServico {
             return true;
         if (!(o instanceof PecaOrdemDeServico other))
             return false;
-        return id != null && id.equals(other.id);
+        return id != null && id.equals(other.getId());
     }
 
     @Override

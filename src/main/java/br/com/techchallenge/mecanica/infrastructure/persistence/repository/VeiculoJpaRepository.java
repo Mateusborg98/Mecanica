@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import br.com.techchallenge.mecanica.domain.veiculo.Veiculo;
 import br.com.techchallenge.mecanica.infrastructure.persistence.entity.VeiculoJpaEntity;
 
 public interface VeiculoJpaRepository extends JpaRepository<VeiculoJpaEntity, UUID> {
@@ -12,4 +13,6 @@ public interface VeiculoJpaRepository extends JpaRepository<VeiculoJpaEntity, UU
     boolean existsByPlaca(String placa);
 
     Optional<VeiculoJpaEntity> findByPlaca(String placa);
+
+    Optional<VeiculoJpaEntity> findByClienteJpaEntityId(UUID id);
 }

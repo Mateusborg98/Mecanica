@@ -1,68 +1,51 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.gateway;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import br.com.techchallenge.mecanica.application.gateway.ServicoGateway;
-import br.com.techchallenge.mecanica.domain.exception.RegraNegocioException;
+import br.com.techchallenge.mecanica.domain.servico.Servico;
 import br.com.techchallenge.mecanica.infrastructure.persistence.entity.ServicoJpaEntity;
-import br.com.techchallenge.mecanica.infrastructure.persistence.repository.ServicoRepository;
-import br.com.techchallenge.mecanica.mapper.ServicoMapper;
-import br.com.techchallenge.mecanica.presentation.servico.CreateServicoRequestDto;
-import br.com.techchallenge.mecanica.presentation.servico.ServicoResponseDto;
-import br.com.techchallenge.mecanica.presentation.servico.UpdateServicoRequestDTO;
-import lombok.RequiredArgsConstructor;
+import br.com.techchallenge.mecanica.infrastructure.persistence.mapper.ServicoMapper;
+import br.com.techchallenge.mecanica.infrastructure.persistence.repository.ServicoJpaRepository;
+import lombok.AllArgsConstructor;
 
 @Service
-@Transactional
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class ServicoGatewayImpl implements ServicoGateway {
 
-    private final ServicoRepository repository;
+    private final ServicoJpaRepository repository;
     private final ServicoMapper mapper;
 
     @Override
-    @Transactional
-    public ServicoResponseDto criar(CreateServicoRequestDto request) {
-        ServicoJpaEntity servicoJpaEntity = mapper.toEntity(request);
-        return mapper.toResponse(repository.save(servicoJpaEntity));
+    public Servico salvar(Servico servico) {
+
+        ServicoJpaEntity entity = mapper.toJpaEntity(servico);
+
+        ServicoJpaEntity salvo = repository.save(entity);
+
+        return mapper.toDomain(salvo);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public ServicoResponseDto buscarPorId(UUID id) {
-        return mapper.toResponse(buscar(id));
+    public Optional<Servico> buscarPorId(UUID id) {
+
+        return repository.findById(id).map(mapper::toDomain);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<ServicoResponseDto> listar() {
-        return repository.findAll()
-                .stream()
-                .map(mapper::toResponse)
-                .toList();
+    public List<Servico> listar() {
+
+        return repository.findAll().stream().map(mapper::toDomain).toList();
     }
 
     @Override
-    @Transactional
-    public ServicoResponseDto atualizar(UUID id, UpdateServicoRequestDTO request) {
-        ServicoJpaEntity servicoJpaEntity = buscar(id);
-        mapper.updateEntity(request, servicoJpaEntity);
-        return mapper.toResponse(repository.save(servicoJpaEntity));
-    }
-
-    @Override
-    @Transactional
     public void deletar(UUID id) {
-        repository.delete(buscar(id));
-    }
 
-    private ServicoJpaEntity buscar(UUID id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RegraNegocioException("Serviço não encontrado"));
+        repository.deleteById(id);
     }
 
 }

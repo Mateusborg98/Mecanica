@@ -10,7 +10,7 @@ public interface EstoqueGateway {
 
     Estoque salvar(Estoque estoque);
 
-    Optional<Estoque> buscarPorPecaId(UUID pecaId);
+    Optional<Estoque> buscarEstoquePorPecaId(UUID pecaId);
 
     List<Estoque> listar();
 

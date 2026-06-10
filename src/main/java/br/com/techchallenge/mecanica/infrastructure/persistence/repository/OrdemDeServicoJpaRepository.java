@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import br.com.techchallenge.mecanica.domain.enums.StatusOrdemDeServicoEnum;
 import br.com.techchallenge.mecanica.infrastructure.persistence.entity.OrdemDeServicoJpaEntity;
 
-public interface OrdemDeServicoRepository extends JpaRepository<OrdemDeServicoJpaEntity, UUID> {
+public interface OrdemDeServicoJpaRepository extends JpaRepository<OrdemDeServicoJpaEntity, UUID> {
 
     List<OrdemDeServicoJpaEntity> findByStatus(StatusOrdemDeServicoEnum status);
     

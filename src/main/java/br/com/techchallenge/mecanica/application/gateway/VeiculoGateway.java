@@ -19,4 +19,6 @@ public interface VeiculoGateway {
     List<Veiculo> listar();
 
     void deletar(UUID id);
+
+    List<Veiculo> buscarPorClienteId(UUID id);
 }

@@ -54,4 +54,12 @@ public class VeiculoGatewayImpl implements VeiculoGateway {
 
         repository.deleteById(id);
     }
+
+    @Override
+    public List<Veiculo> buscarPorClienteId(UUID id) {
+        return repository.findByClienteJpaEntityId(id)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
 }

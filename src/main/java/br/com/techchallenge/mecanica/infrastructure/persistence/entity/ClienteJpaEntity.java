@@ -37,17 +37,21 @@ public class ClienteJpaEntity {
 
     private String email;
 
+    @Builder.Default
     @OneToMany(mappedBy = "cliente")
     private List<VeiculoJpaEntity> veiculoJpaEntities = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "cliente")
     private List<OrdemDeServicoJpaEntity> ordemDeServicoJpaEntities = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ClienteJpaEntity other)) return false;
-        return id != null && id.equals(other.id);
+        if (this == o)
+            return true;
+        if (!(o instanceof ClienteJpaEntity other))
+            return false;
+        return id != null && id.equals(other.getId());
     }
 
     @Override
