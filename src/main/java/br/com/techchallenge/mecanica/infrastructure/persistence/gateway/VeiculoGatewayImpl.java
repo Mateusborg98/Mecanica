@@ -1,5 +1,11 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.gateway;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
 import br.com.techchallenge.mecanica.application.gateway.VeiculoGateway;
 import br.com.techchallenge.mecanica.domain.exception.CpfInvalidoException;
 import br.com.techchallenge.mecanica.domain.exception.PlacaInvalidaException;
@@ -8,11 +14,6 @@ import br.com.techchallenge.mecanica.infrastructure.persistence.entity.VeiculoJp
 import br.com.techchallenge.mecanica.infrastructure.persistence.mapper.VeiculoMapper;
 import br.com.techchallenge.mecanica.infrastructure.persistence.repository.VeiculoJpaRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Component
 @AllArgsConstructor
@@ -47,12 +48,6 @@ public class VeiculoGatewayImpl implements VeiculoGateway {
     public List<Veiculo> listar() {
 
         return repository.findAll().stream().map(mapper::toDomain).toList();
-    }
-
-    @Override
-    public void deletar(UUID id) {
-
-        repository.deleteById(id);
     }
 
     @Override

@@ -23,12 +23,10 @@ public class ClienteMapper {
 
     public Cliente toDomain(ClienteJpaEntity clienteJpaEntity) throws CpfInvalidoException {
 
-        return Cliente.builder()
-                .id(clienteJpaEntity.getId())
-                .nome(clienteJpaEntity.getNome())
-                .cpfCnpj(new CpfCnpj(clienteJpaEntity.getCpfCnpj()))
-                .contato(clienteJpaEntity.getContato())
-                .email(clienteJpaEntity.getEmail())
-                .build();
+        return new Cliente(
+                clienteJpaEntity.getNome(),
+                new CpfCnpj(clienteJpaEntity.getCpfCnpj()),
+                clienteJpaEntity.getContato(),
+                clienteJpaEntity.getEmail());
     }
 }

@@ -5,11 +5,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 import br.com.techchallenge.mecanica.domain.ordemdeservico.OrdemDeServico;
-import br.com.techchallenge.mecanica.presentation.ordemDeServico.TempoMedioServicoResponseDto;
+import br.com.techchallenge.mecanica.presentation.dto.ordemDeServico.TempoMedioServicoResponseDto;
 
 public interface OrdemDeServicoGateway {
 
-    OrdemDeServico salvar(OrdemDeServico ordemDeServico);
+    OrdemDeServico salvar(OrdemDeServico ordem);
 
     Optional<OrdemDeServico> buscarPorId(UUID id);
 

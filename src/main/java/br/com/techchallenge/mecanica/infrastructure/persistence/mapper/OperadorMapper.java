@@ -23,13 +23,13 @@ public class OperadorMapper {
 
     public Operador toDomain(OperadorJpaEntity operadorJpaEntity) {
 
-        return Operador.builder()
-                .id(operadorJpaEntity.getId())
-                .nome(operadorJpaEntity.getNome())
-                .matricula(operadorJpaEntity.getMatricula())
-                .contato(operadorJpaEntity.getContato())
-                .email(operadorJpaEntity.getEmail())
-                .build();
+        return new Operador(
+            operadorJpaEntity.getNome(), 
+            operadorJpaEntity.getMatricula(), 
+            operadorJpaEntity.getEmail(), 
+            operadorJpaEntity.getContato(), 
+            // precisa ajustar
+            null);
     }
 
 }

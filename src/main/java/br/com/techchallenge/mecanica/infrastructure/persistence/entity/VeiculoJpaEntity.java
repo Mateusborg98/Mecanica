@@ -1,5 +1,6 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +39,10 @@ public class VeiculoJpaEntity {
 
     @Column(nullable = false)
     private Integer ano;
+
+    private boolean ativo;
+    
+    private LocalDateTime dataInativacao;
 
     @ManyToOne(optional = false)
     private ClienteJpaEntity clienteJpaEntity;

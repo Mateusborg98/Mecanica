@@ -10,19 +10,22 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ServicoMapper {
 
-    public ServicoJpaEntity toJpaEntity(Servico servico) {
-        return ServicoJpaEntity.builder()
-                .id(servico.getId())
-                .descricao(servico.getDescricao())
-                .preco(servico.getPreco())
-                .build();
+    public Servico toDomain(ServicoJpaEntity entity) {
+
+        return new Servico(
+                entity.getDescricao(),
+                entity.getPreco());
     }
 
-    public Servico toDomain(ServicoJpaEntity servicoJpaEntity) {
-        return Servico.builder()
-                .id(servicoJpaEntity.getId())
-                .descricao(servicoJpaEntity.getDescricao())
-                .preco(servicoJpaEntity.getPreco())
-                .build();
+    public ServicoJpaEntity toEntity(Servico servico) {
+
+        ServicoJpaEntity entity = new ServicoJpaEntity();
+
+        entity.setId(servico.getId());
+        entity.setDescricao(servico.getDescricao());
+        entity.setPreco(servico.getPreco());
+        entity.setAtivo(servico.isAtivo());
+
+        return entity;
     }
 }

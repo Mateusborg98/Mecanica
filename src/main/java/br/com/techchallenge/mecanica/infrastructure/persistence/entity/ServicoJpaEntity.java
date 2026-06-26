@@ -1,6 +1,7 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -29,6 +30,10 @@ public class ServicoJpaEntity {
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal preco;
+
+    private boolean ativo;
+
+    private LocalDateTime dataInativacao;
 
     @Override
     public boolean equals(Object o) {

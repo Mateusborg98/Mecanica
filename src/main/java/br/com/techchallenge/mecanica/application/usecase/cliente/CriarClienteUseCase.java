@@ -2,34 +2,33 @@ package br.com.techchallenge.mecanica.application.usecase.cliente;
 
 import org.springframework.stereotype.Service;
 
+import br.com.techchallenge.mecanica.application.dto.cliente.CriarClienteInput;
 import br.com.techchallenge.mecanica.application.gateway.ClienteGateway;
 import br.com.techchallenge.mecanica.domain.cliente.Cliente;
 import br.com.techchallenge.mecanica.domain.cliente.valueobject.CpfCnpj;
 import br.com.techchallenge.mecanica.domain.exception.CpfDuplicadoException;
-import br.com.techchallenge.mecanica.presentation.cliente.CriarClienteRequest;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class CriarClienteUseCase {
 
-    private final ClienteGateway gateway;
+    private final ClienteGateway clienteGateway;
 
-    public CriarClienteUseCase(ClienteGateway gateway) {
+    public Cliente executar(CriarClienteInput input) {
 
-        this.gateway = gateway;
-    }
-
-    public Cliente executar(CriarClienteRequest clienteRequest) {
-
-        gateway.buscarPorCpfCnpj(clienteRequest.cpfCnpj()).ifPresent(cliente -> {
-            throw new CpfDuplicadoException("CPF já cadastrado");
-        });
+        clienteGateway.buscarPorCpfCnpj(input.cpfCnpj())
+                .ifPresent(cliente -> {
+                    throw new CpfDuplicadoException(
+                            "CPF/CNPJ já cadastrado");
+                });
 
         Cliente cliente = new Cliente(
-                clienteRequest.nome(),
-                new CpfCnpj(clienteRequest.cpfCnpj()),
-                clienteRequest.contato(),
-                clienteRequest.email());
+                input.nome(),
+                new CpfCnpj(input.cpfCnpj()),
+                input.contato(),
+                input.email());
 
-        return gateway.salvar(cliente);
+        return clienteGateway.salvar(cliente);
     }
 }

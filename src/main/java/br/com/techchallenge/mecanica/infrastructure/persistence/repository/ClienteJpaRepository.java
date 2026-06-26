@@ -1,15 +1,19 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.repository;
 
-import br.com.techchallenge.mecanica.infrastructure.persistence.entity.ClienteJpaEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import br.com.techchallenge.mecanica.infrastructure.persistence.entity.ClienteJpaEntity;
+
 public interface ClienteJpaRepository extends JpaRepository<ClienteJpaEntity, UUID> {
 
-    boolean existsByCpfCnpj(String cpfCnpj);
+    Optional<ClienteJpaEntity> findByCpfCnpjAtivoTrue(String cpfCnpj);
 
-    Optional<ClienteJpaEntity> findByCpfCnpj(String cpfCnpj);
+    List<ClienteJpaEntity> findByAtivoTrue();
+
+    Optional<ClienteJpaEntity> findByIdAtivoTrue(UUID clienteId);
 
 }

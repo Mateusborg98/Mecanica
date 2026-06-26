@@ -1,5 +1,11 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.gateway;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
 import br.com.techchallenge.mecanica.application.gateway.ClienteGateway;
 import br.com.techchallenge.mecanica.domain.cliente.Cliente;
 import br.com.techchallenge.mecanica.domain.exception.CpfInvalidoException;
@@ -7,11 +13,6 @@ import br.com.techchallenge.mecanica.infrastructure.persistence.entity.ClienteJp
 import br.com.techchallenge.mecanica.infrastructure.persistence.mapper.ClienteMapper;
 import br.com.techchallenge.mecanica.infrastructure.persistence.repository.ClienteJpaRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Component
 @AllArgsConstructor
@@ -22,7 +23,6 @@ public class ClienteGatewayImpl implements ClienteGateway {
 
     @Override
     public Cliente salvar(Cliente cliente) throws CpfInvalidoException {
-
         ClienteJpaEntity entity = mapper.toJpaEntity(cliente);
 
         ClienteJpaEntity salvo = repository.save(entity);
@@ -31,24 +31,17 @@ public class ClienteGatewayImpl implements ClienteGateway {
     }
 
     @Override
-    public Optional<Cliente> buscarPorId(UUID id) {
-        return repository.findById(id).map(mapper::toDomain);
-    }
-
-    @Override
     public Optional<Cliente> buscarPorCpfCnpj(String cpfCnpj) {
-        return repository.findByCpfCnpj(cpfCnpj).map(mapper::toDomain);
+        return repository.findByCpfCnpjAtivoTrue(cpfCnpj).map(mapper::toDomain);
     }
 
     @Override
     public List<Cliente> listar() {
-
-        return repository.findAll().stream().map(mapper::toDomain).toList();
+        return repository.findByAtivoTrue().stream().map(mapper::toDomain).toList();
     }
 
     @Override
-    public void deletar(UUID id) {
-
-        repository.deleteById(id);
+    public Optional<Cliente> buscarPorId(UUID clienteId) {
+        return repository.findByIdAtivoTrue(clienteId).map(mapper::toDomain);
     }
 }

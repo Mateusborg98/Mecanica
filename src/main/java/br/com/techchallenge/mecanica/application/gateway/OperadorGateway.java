@@ -12,9 +12,7 @@ public interface OperadorGateway {
 
     Optional<Operador> buscarPorId(UUID id);
 
-    List<Operador> listar();
-
-    void deletar(UUID id);
-
     Optional<Operador> buscarPorMatricula(Integer matricula);
+
+    List<Operador> listar();
 }

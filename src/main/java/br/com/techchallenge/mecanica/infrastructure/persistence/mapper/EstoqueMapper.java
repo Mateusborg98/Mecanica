@@ -1,9 +1,10 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.mapper;
 
+import org.springframework.stereotype.Component;
+
 import br.com.techchallenge.mecanica.domain.estoque.Estoque;
 import br.com.techchallenge.mecanica.infrastructure.persistence.entity.EstoqueJpaEntity;
 import br.com.techchallenge.mecanica.infrastructure.persistence.entity.PecaJpaEntity;
-import org.springframework.stereotype.Component;
 
 @Component
 public class EstoqueMapper {
@@ -20,11 +21,9 @@ public class EstoqueMapper {
     }
 
     public Estoque toDomain(EstoqueJpaEntity estoqueJpaEntity) {
-        return Estoque.builder()
-                .id(estoqueJpaEntity.getId())
-                .pecaId(estoqueJpaEntity.getPecaJpaEntity().getId())
-                .quantidade(estoqueJpaEntity.getQuantidade())
-                .build();
+        return new Estoque(
+                estoqueJpaEntity.getPecaJpaEntity().getId(),
+                estoqueJpaEntity.getQuantidade());
     }
 
 }

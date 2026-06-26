@@ -5,10 +5,10 @@ import org.springframework.stereotype.Service;
 import br.com.techchallenge.mecanica.application.gateway.VeiculoGateway;
 import br.com.techchallenge.mecanica.domain.exception.RegraNegocioException;
 import br.com.techchallenge.mecanica.domain.veiculo.Veiculo;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class BuscarVeiculoPorPlacaUseCase {
 
     private final VeiculoGateway gateway;

@@ -1,5 +1,6 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.entity;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -35,6 +36,9 @@ public class PecaOrdemDeServicoJpaEntity {
 
     @Column(nullable = false)
     private Integer quantidade;
+
+    @Column(nullable = false)
+    private BigDecimal valorUnitario;
 
     @Override
     public boolean equals(Object o) {

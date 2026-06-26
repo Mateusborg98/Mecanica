@@ -1,9 +1,11 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 import br.com.techchallenge.mecanica.domain.enums.StatusServicoEnum;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -43,11 +45,14 @@ public class ServicoOrdemDeServicoJpaEntity {
     private LocalDateTime dtInicio;
     private LocalDateTime dtFim;
 
+    @Column(nullable = false)
+    private BigDecimal valorCobrado;
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof ServicoJpaEntity other))
+        if (!(o instanceof ServicoOrdemDeServicoJpaEntity other))
             return false;
         return id != null && id.equals(other.getId());
     }

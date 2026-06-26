@@ -13,7 +13,4 @@ public interface ServicoGateway {
     Optional<Servico> buscarPorId(UUID id);
 
     List<Servico> listar();
-
-    void deletar(UUID id);
-
 }

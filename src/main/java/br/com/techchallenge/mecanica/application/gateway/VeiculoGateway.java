@@ -1,16 +1,14 @@
 package br.com.techchallenge.mecanica.application.gateway;
 
-import br.com.techchallenge.mecanica.domain.exception.CpfInvalidoException;
-import br.com.techchallenge.mecanica.domain.exception.PlacaInvalidaException;
-import br.com.techchallenge.mecanica.domain.veiculo.Veiculo;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import br.com.techchallenge.mecanica.domain.veiculo.Veiculo;
+
 public interface VeiculoGateway {
 
-    Veiculo salvar(Veiculo request) throws PlacaInvalidaException, CpfInvalidoException;
+    Veiculo salvar(Veiculo veiculo);
 
     Optional<Veiculo> buscarPorId(UUID id);
 
@@ -18,7 +16,5 @@ public interface VeiculoGateway {
 
     List<Veiculo> listar();
 
-    void deletar(UUID id);
-
-    List<Veiculo> buscarPorClienteId(UUID id);
+    List<Veiculo> buscarPorClienteId(UUID clienteId);
 }

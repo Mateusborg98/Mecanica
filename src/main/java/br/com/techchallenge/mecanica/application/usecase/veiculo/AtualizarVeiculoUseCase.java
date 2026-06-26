@@ -1,32 +1,36 @@
 package br.com.techchallenge.mecanica.application.usecase.veiculo;
 
-import br.com.techchallenge.mecanica.application.gateway.VeiculoGateway;
-import br.com.techchallenge.mecanica.domain.veiculo.Veiculo;
-import br.com.techchallenge.mecanica.infrastructure.persistence.mapper.PlacaMapper;
-import br.com.techchallenge.mecanica.presentation.veiculo.AtualizarVeiculoRequest;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+
+import br.com.techchallenge.mecanica.application.dto.veiculo.AtualizarVeiculoInput;
+import br.com.techchallenge.mecanica.application.gateway.VeiculoGateway;
+import br.com.techchallenge.mecanica.domain.exception.RegraNegocioException;
+import br.com.techchallenge.mecanica.domain.veiculo.Veiculo;
+import br.com.techchallenge.mecanica.domain.veiculo.valueObject.Placa;
+import lombok.RequiredArgsConstructor;
+
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AtualizarVeiculoUseCase {
 
-    private final VeiculoGateway gateway;
-    private final PlacaMapper placaMapper;
+    private final VeiculoGateway veiculoGateway;
 
-    public Veiculo executar(UUID id, AtualizarVeiculoRequest atualizarVeiculoRequest) {
+    public Veiculo executar(
+            UUID id,
+            AtualizarVeiculoInput input) {
 
-        Veiculo veiculo = gateway.buscarPorId(id).orElseThrow(()
-                -> new RuntimeException("Veiculo não encontrado"));
+        Veiculo veiculo = veiculoGateway.buscarPorId(id)
+                .orElseThrow(() -> new RegraNegocioException(
+                        "Veículo não encontrado"));
 
         veiculo.atualizarDados(
-                placaMapper.toDomain(atualizarVeiculoRequest.placa()),
-                atualizarVeiculoRequest.marca(),
-                atualizarVeiculoRequest.modelo(),
-                atualizarVeiculoRequest.ano());
+                new Placa(input.placa()),
+                input.marca(),
+                input.modelo(),
+                input.ano());
 
-        return gateway.salvar(veiculo);
+        return veiculoGateway.salvar(veiculo);
     }
 }

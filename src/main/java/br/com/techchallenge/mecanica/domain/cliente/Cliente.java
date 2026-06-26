@@ -1,23 +1,45 @@
 package br.com.techchallenge.mecanica.domain.cliente;
 
-import br.com.techchallenge.mecanica.domain.cliente.valueobject.CpfCnpj;
-import lombok.*;
-
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Setter
+import br.com.techchallenge.mecanica.domain.cliente.valueobject.CpfCnpj;
+import br.com.techchallenge.mecanica.domain.exception.RegraNegocioException;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 @Getter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
 public class Cliente {
+
     private UUID id;
     private String nome;
     private CpfCnpj cpfCnpj;
     private String contato;
     private String email;
+    private boolean ativo;
+    private LocalDateTime dataInativacao;
 
-    public Cliente(String nome, CpfCnpj cpfCnpj, String contato, String email) {
+    public Cliente(UUID id, String nome, CpfCnpj cpfCnpj, String contato, String email, boolean ativo,
+            LocalDateTime dataInativacao) {
+
+        validarNome(nome);
+        validarEmail(email);
+
+        this.id = id;
+        this.nome = nome;
+        this.cpfCnpj = cpfCnpj;
+        this.contato = contato;
+        this.email = email;
+        this.ativo = ativo;
+        this.dataInativacao = dataInativacao;
+    }
+
+    public Cliente(
+            String nome,
+            CpfCnpj cpfCnpj,
+            String contato,
+            String email) {
 
         validarNome(nome);
         validarEmail(email);
@@ -26,21 +48,14 @@ public class Cliente {
         this.cpfCnpj = cpfCnpj;
         this.contato = contato;
         this.email = email;
+        this.ativo = true;
+        this.dataInativacao = null;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Cliente other)) return false;
-        return id != null && id.equals(other.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
-
-    public void atualizarDados(String nome, String contato, String email) {
+    public void atualizarDados(
+            String nome,
+            String contato,
+            String email) {
 
         validarNome(nome);
         validarEmail(email);
@@ -48,6 +63,15 @@ public class Cliente {
         this.nome = nome;
         this.contato = contato;
         this.email = email;
+    }
+
+    public void inativar() {
+        if (!Boolean.TRUE.equals(this.ativo) && dataInativacao != null) {
+            throw new RegraNegocioException(
+                    "Cliente já está inativo");
+        }
+        this.ativo = false;
+        this.dataInativacao = LocalDateTime.now();
     }
 
     private void validarNome(String nome) {
@@ -62,5 +86,24 @@ public class Cliente {
         if (email == null || !email.contains("@")) {
             throw new IllegalArgumentException("Email inválido");
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) {
+            return true;
+        }
+
+        if (!(o instanceof Cliente other)) {
+            return false;
+        }
+
+        return id != null && id.equals(other.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

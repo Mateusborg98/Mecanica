@@ -42,10 +42,4 @@ public class PecaGatewayImpl implements PecaGateway {
         return repository.findAll().stream().map(mapper::toDomain).toList();
     }
 
-    @Override
-    public void deletar(UUID id) {
-
-        repository.deleteById(id);
-    }
-
 }

@@ -1,26 +1,57 @@
 package br.com.techchallenge.mecanica.domain.veiculo;
 
-import br.com.techchallenge.mecanica.domain.cliente.Cliente;
-import br.com.techchallenge.mecanica.domain.veiculo.valueObject.Placa;
-import lombok.*;
-
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Setter
+import br.com.techchallenge.mecanica.domain.exception.RegraNegocioException;
+import br.com.techchallenge.mecanica.domain.veiculo.valueObject.Placa;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 @Getter
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 public class Veiculo {
+
     private UUID id;
     private Placa placa;
     private String marca;
     private String modelo;
     private Integer ano;
-    private Cliente cliente;
+    private UUID clienteId;
+    private boolean ativo;
+    private LocalDateTime dataInativacao;
 
-    public Veiculo(Placa placa, String marca, String modelo, Integer ano, Cliente cliente) {
+    public Veiculo(
+            Placa placa,
+            String marca,
+            String modelo,
+            Integer ano,
+            UUID clienteId) {
+
+        validarMarca(marca);
+        validarModelo(modelo);
+        validarAno(ano);
+
+        if (clienteId == null) {
+            throw new IllegalArgumentException(
+                    "Cliente obrigatório");
+        }
+
+        this.placa = placa;
+        this.marca = marca;
+        this.modelo = modelo;
+        this.ano = ano;
+        this.clienteId = clienteId;
+        this.ativo = true;
+        this.dataInativacao = null;
+    }
+
+    public void atualizarDados(
+            Placa placa,
+            String marca,
+            String modelo,
+            Integer ano) {
 
         validarMarca(marca);
         validarModelo(modelo);
@@ -30,55 +61,70 @@ public class Veiculo {
         this.marca = marca;
         this.modelo = modelo;
         this.ano = ano;
-        this.cliente = cliente;
     }
 
-    public void atualizarDados(Placa placa, String marca, String modelo, Integer ano) {
+    public void alterarCliente(UUID clienteId) {
 
-        validarMarca(marca);
-        validarModelo(modelo);
-        validarAno(ano);
+        if (clienteId == null) {
+            throw new IllegalArgumentException(
+                    "Cliente obrigatório");
+        }
 
-        this.placa = placa;
-        this.marca = marca;
-        this.modelo = modelo;
-        this.ano = ano;
+        this.clienteId = clienteId;
     }
 
-    public void atualizarIdCliente(Cliente cliente) {
-        this.cliente = cliente;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Veiculo other)) return false;
-        return id != null && id.equals(other.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
+    public void inativar() {
+        if (!Boolean.TRUE.equals(ativo) && dataInativacao != null) {
+            throw new RegraNegocioException(
+                    "Veículo já está inativo");
+        }
+        this.ativo = false;
+        this.dataInativacao = LocalDateTime.now();
     }
 
     private void validarMarca(String marca) {
 
         if (marca == null || marca.isBlank()) {
-            throw new IllegalArgumentException("Marcar obrigatório");
+            throw new IllegalArgumentException(
+                    "Marca obrigatória");
         }
     }
 
     private void validarModelo(String modelo) {
 
         if (modelo == null || modelo.isBlank()) {
-            throw new IllegalArgumentException("Modelo obrigatório");
+            throw new IllegalArgumentException(
+                    "Modelo obrigatório");
         }
     }
 
     private void validarAno(Integer ano) {
 
-        if (ano <= 0 || ano <= 1900 || ano > LocalDate.now().getYear()) {
-            throw new IllegalArgumentException("Ano inválido");
+        if (ano == null
+                || ano < 1900
+                || ano > LocalDate.now().getYear()) {
+
+            throw new IllegalArgumentException(
+                    "Ano inválido");
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) {
+            return true;
+        }
+
+        if (!(o instanceof Veiculo other)) {
+            return false;
+        }
+
+        return id != null && id.equals(other.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

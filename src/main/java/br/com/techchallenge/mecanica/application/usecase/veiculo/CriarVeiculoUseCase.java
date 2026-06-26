@@ -1,44 +1,48 @@
 package br.com.techchallenge.mecanica.application.usecase.veiculo;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 
+import br.com.techchallenge.mecanica.application.dto.veiculo.CriarVeiculoInput;
 import br.com.techchallenge.mecanica.application.gateway.ClienteGateway;
 import br.com.techchallenge.mecanica.application.gateway.VeiculoGateway;
-import br.com.techchallenge.mecanica.domain.cliente.Cliente;
 import br.com.techchallenge.mecanica.domain.exception.ClienteNaoEncontradoException;
-import br.com.techchallenge.mecanica.domain.exception.VeiculoDuplicadoException;
+import br.com.techchallenge.mecanica.domain.exception.RegraNegocioException;
 import br.com.techchallenge.mecanica.domain.veiculo.Veiculo;
-import br.com.techchallenge.mecanica.infrastructure.persistence.mapper.PlacaMapper;
-import br.com.techchallenge.mecanica.presentation.veiculo.CriarVeiculoRequest;
-import lombok.AllArgsConstructor;
+import br.com.techchallenge.mecanica.domain.veiculo.valueObject.Placa;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CriarVeiculoUseCase {
 
-    private final VeiculoGateway gateway;
+    private final VeiculoGateway veiculoGateway;
     private final ClienteGateway clienteGateway;
-    private final PlacaMapper placaMapper;
 
-    public Veiculo executar(CriarVeiculoRequest veiculoRequest) {
+    public Veiculo executar(
+            CriarVeiculoInput input) {
 
+        UUID clienteId = clienteGateway.buscarPorCpfCnpj(
+                input.cpfCnpj())
+                .orElseThrow(() -> new ClienteNaoEncontradoException(
+                        "Cliente não encontrado")).getId();
 
-        Cliente cliente = clienteGateway.buscarPorId(veiculoRequest.clienteId())
-                .orElseThrow(() ->
-                        new ClienteNaoEncontradoException("Cliente não encontrado " + veiculoRequest.clienteId().toString()));
-
-        gateway.buscarPorPlaca(veiculoRequest.placa()).ifPresent(veiculo -> {
-            throw new VeiculoDuplicadoException("Veiculo já registrado");
-        });
+        veiculoGateway.buscarPorPlaca(
+                input.placa())
+                .ifPresent(v -> {
+                    throw new RegraNegocioException(
+                            "Placa já cadastrada");
+                });
 
         Veiculo veiculo = new Veiculo(
-                placaMapper.toDomain(veiculoRequest.placa()),
-                veiculoRequest.marca(),
-                veiculoRequest.modelo(),
-                veiculoRequest.ano(),
-                cliente
-        );
+                new Placa(input.placa()),
+                input.marca(),
+                input.modelo(),
+                input.ano(),
+                clienteId);
 
-        return gateway.salvar(veiculo);
+        return veiculoGateway.salvar(
+                veiculo);
     }
 }

@@ -1,5 +1,6 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +37,10 @@ public class ClienteJpaEntity {
     private String contato;
 
     private String email;
+
+    private boolean ativo;
+
+    private LocalDateTime dataInativacao;
 
     @Builder.Default
     @OneToMany(mappedBy = "cliente")

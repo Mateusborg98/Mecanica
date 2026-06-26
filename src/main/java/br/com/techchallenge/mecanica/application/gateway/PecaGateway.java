@@ -14,6 +14,4 @@ public interface PecaGateway {
 
     List<Peca> listar();
 
-    void deletar(UUID id);
-
 }

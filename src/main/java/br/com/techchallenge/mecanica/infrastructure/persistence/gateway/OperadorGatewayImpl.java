@@ -11,10 +11,10 @@ import br.com.techchallenge.mecanica.domain.operador.Operador;
 import br.com.techchallenge.mecanica.infrastructure.persistence.entity.OperadorJpaEntity;
 import br.com.techchallenge.mecanica.infrastructure.persistence.mapper.OperadorMapper;
 import br.com.techchallenge.mecanica.infrastructure.persistence.repository.OperadorJpaRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class OperadorGatewayImpl implements OperadorGateway {
 
     private final OperadorJpaRepository repository;
@@ -22,7 +22,6 @@ public class OperadorGatewayImpl implements OperadorGateway {
 
     @Override
     public Operador salvar(Operador operador) {
-
         OperadorJpaEntity entity = mapper.toJpaEntity(operador);
 
         OperadorJpaEntity salvo = repository.save(entity);
@@ -32,25 +31,20 @@ public class OperadorGatewayImpl implements OperadorGateway {
 
     @Override
     public Optional<Operador> buscarPorId(UUID id) {
-
         return repository.findById(id).map(mapper::toDomain);
     }
 
     @Override
     public Optional<Operador> buscarPorMatricula(Integer matricula) {
-
-        return repository.findByMatricula(matricula).map(mapper::toDomain);
+        return repository.findByMatricula(matricula)
+                .map(mapper::toDomain);
     }
 
     @Override
     public List<Operador> listar() {
-
-        return repository.findAll().stream().map(mapper::toDomain).toList();
-    }
-
-    @Override
-    public void deletar(UUID id) {
-
-        repository.deleteById(id);
+        return repository.findAll()
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 }

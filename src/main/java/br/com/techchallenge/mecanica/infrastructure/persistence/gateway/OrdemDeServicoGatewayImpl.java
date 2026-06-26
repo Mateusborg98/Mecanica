@@ -18,7 +18,7 @@ import br.com.techchallenge.mecanica.infrastructure.persistence.entity.OrdemDeSe
 import br.com.techchallenge.mecanica.infrastructure.persistence.entity.ServicoOrdemDeServicoJpaEntity;
 import br.com.techchallenge.mecanica.infrastructure.persistence.mapper.OrdemDeServicoMapper;
 import br.com.techchallenge.mecanica.infrastructure.persistence.repository.OrdemDeServicoJpaRepository;
-import br.com.techchallenge.mecanica.presentation.ordemDeServico.TempoMedioServicoResponseDto;
+import br.com.techchallenge.mecanica.presentation.dto.ordemDeServico.TempoMedioServicoResponseDto;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -58,7 +58,7 @@ public class OrdemDeServicoGatewayImpl implements OrdemDeServicoGateway {
         List<OrdemDeServicoJpaEntity> ordens = ordemRepository.findByStatus(
                 StatusOrdemDeServicoEnum.FINALIZADA);
 
-        Map<String, List<Duration>> temposPorServico = new HashMap<>();
+        Map<UUID, List<Duration>> temposPorServico = new HashMap<>();
 
         for (OrdemDeServicoJpaEntity os : ordens) {
 
@@ -71,10 +71,10 @@ public class OrdemDeServicoGatewayImpl implements OrdemDeServicoGateway {
                             sos.getDtInicio(),
                             sos.getDtFim());
 
-                    String descricao = sos.getServicoJpaEntity().getDescricao();
+                    UUID servicoId = sos.getServicoJpaEntity().getId();
 
                     temposPorServico
-                            .computeIfAbsent(descricao, k -> new ArrayList<>())
+                            .computeIfAbsent(servicoId, k -> new ArrayList<>())
                             .add(duracao);
                 }
             }

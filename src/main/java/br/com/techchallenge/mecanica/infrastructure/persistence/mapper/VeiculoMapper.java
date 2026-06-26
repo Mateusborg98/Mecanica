@@ -1,5 +1,10 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.mapper;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
 import br.com.techchallenge.mecanica.domain.cliente.Cliente;
 import br.com.techchallenge.mecanica.domain.exception.CpfInvalidoException;
 import br.com.techchallenge.mecanica.domain.exception.PlacaInvalidaException;
@@ -7,12 +12,8 @@ import br.com.techchallenge.mecanica.domain.veiculo.Veiculo;
 import br.com.techchallenge.mecanica.domain.veiculo.valueObject.Placa;
 import br.com.techchallenge.mecanica.infrastructure.persistence.entity.ClienteJpaEntity;
 import br.com.techchallenge.mecanica.infrastructure.persistence.entity.VeiculoJpaEntity;
-import br.com.techchallenge.mecanica.presentation.veiculo.VeiculoResponse;
+import br.com.techchallenge.mecanica.presentation.dto.veiculo.VeiculoResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor

@@ -1,5 +1,6 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.entity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -29,10 +30,17 @@ public class OperadorJpaEntity {
     @Column(nullable = false, unique = true)
     private Integer matricula;
 
+    @Column(nullable = false, unique = true)
+    private String cargo;
+
     private String email;
 
     @Column(nullable = false)
     private String contato;
+
+    private boolean ativo;
+    
+    private LocalDateTime dataInativacao;
 
     @Override
     public boolean equals(Object o) {
