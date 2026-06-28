@@ -49,11 +49,11 @@ public class PecaOrdemDeServicoMapper {
 
         Peca peca = pecaMapper.toDomain(pecaOrdemDeServicoJpaEntity.getPecaJpaEntity());
 
-        return PecaOrdemDeServico.builder()
-                .id(pecaOrdemDeServicoJpaEntity.getId())
-                .peca(peca)
-                .quantidade(pecaOrdemDeServicoJpaEntity.getQuantidade())
-                .build();
+        return new PecaOrdemDeServico(
+                pecaOrdemDeServicoJpaEntity.getId(),
+                peca,
+                pecaOrdemDeServicoJpaEntity.getQuantidade(),
+                pecaOrdemDeServicoJpaEntity.getValorUnitario());
     }
 
     public List<PecaOrdemDeServico> toListDomain(List<PecaOrdemDeServicoJpaEntity> pecaOrdemDeServicoJpaEntity) {
@@ -64,11 +64,11 @@ public class PecaOrdemDeServicoMapper {
 
             Peca peca = pecaMapper.toDomain(pecaOrdemDeServico.getPecaJpaEntity());
 
-            pecaOrdemDeServicos.add(PecaOrdemDeServico.builder()
-                    .id(pecaOrdemDeServico.getId())
-                    .peca(peca)
-                    .quantidade(pecaOrdemDeServico.getQuantidade())
-                    .build());
+            pecaOrdemDeServicos.add(new PecaOrdemDeServico(
+                    pecaOrdemDeServico.getId(),
+                    peca,
+                    pecaOrdemDeServico.getQuantidade(),
+                    pecaOrdemDeServico.getValorUnitario()));
         }
 
         return pecaOrdemDeServicos;

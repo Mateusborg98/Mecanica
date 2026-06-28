@@ -19,7 +19,7 @@ public class ServicoOrdemDeServicoMapper {
 
     public ServicoOrdemDeServicoJpaEntity toJpaEntity(ServicoOrdemDeServico servicoOrdemDeServico) {
 
-        ServicoJpaEntity servicoJpaEntity = servicoMapper.toJpaEntity(servicoOrdemDeServico.getServico());
+        ServicoJpaEntity servicoJpaEntity = servicoMapper.toEntity(servicoOrdemDeServico.getServico());
 
         return ServicoOrdemDeServicoJpaEntity.builder()
                 .id(servicoOrdemDeServico.getId())
@@ -35,7 +35,7 @@ public class ServicoOrdemDeServicoMapper {
         List<ServicoOrdemDeServicoJpaEntity> servicoOrdemDeServicoJpaEntity = new ArrayList<>();
 
         for (ServicoOrdemDeServico servicoOrdemDeServico : servicoOrdensDeServicos) {
-            ServicoJpaEntity servicoJpaEntity = servicoMapper.toJpaEntity(servicoOrdemDeServico.getServico());
+            ServicoJpaEntity servicoJpaEntity = servicoMapper.toEntity(servicoOrdemDeServico.getServico());
 
             servicoOrdemDeServicoJpaEntity.add(ServicoOrdemDeServicoJpaEntity.builder()
                     .id(servicoOrdemDeServico.getId())
@@ -53,31 +53,32 @@ public class ServicoOrdemDeServicoMapper {
 
         Servico servico = servicoMapper.toDomain(servicoOrdemDeServicoJpaEntity.getServicoJpaEntity());
 
-        return ServicoOrdemDeServico.builder()
-                .id(servicoOrdemDeServicoJpaEntity.getId())
-                .servico(servico)
-                .status(servicoOrdemDeServicoJpaEntity.getStatus())
-                .dtInicio(servicoOrdemDeServicoJpaEntity.getDtInicio())
-                .dtFim(servicoOrdemDeServicoJpaEntity.getDtFim())
-                .build();
+        return new ServicoOrdemDeServico(
+                servicoOrdemDeServicoJpaEntity.getId(),
+                servico,
+                servicoOrdemDeServicoJpaEntity.getStatus(),
+                servicoOrdemDeServicoJpaEntity.getDtInicio(),
+                servicoOrdemDeServicoJpaEntity.getDtFim(),
+                servicoOrdemDeServicoJpaEntity.getValorCobrado());
     }
 
-    public List<ServicoOrdemDeServico> toListDomain(List<ServicoOrdemDeServicoJpaEntity> servicoOrdemDeServicoJpaEntities) {
+    public List<ServicoOrdemDeServico> toListDomain(
+            List<ServicoOrdemDeServicoJpaEntity> servicoOrdemDeServicoJpaEntities) {
 
         List<ServicoOrdemDeServico> servicoOrdemDeServicos = new ArrayList<>();
 
         for (ServicoOrdemDeServicoJpaEntity servicoOrdemDeServicoJpaEntity : servicoOrdemDeServicoJpaEntities) {
             Servico servico = servicoMapper.toDomain(servicoOrdemDeServicoJpaEntity.getServicoJpaEntity());
 
-            servicoOrdemDeServicos.add(ServicoOrdemDeServico.builder()
-                .id(servicoOrdemDeServicoJpaEntity.getId())
-                .servico(servico)
-                .status(servicoOrdemDeServicoJpaEntity.getStatus())
-                .dtInicio(servicoOrdemDeServicoJpaEntity.getDtInicio())
-                .dtFim(servicoOrdemDeServicoJpaEntity.getDtFim())
-                .build());
+            servicoOrdemDeServicos.add(new ServicoOrdemDeServico(
+                    servicoOrdemDeServicoJpaEntity.getId(),
+                    servico,
+                    servicoOrdemDeServicoJpaEntity.getStatus(),
+                    servicoOrdemDeServicoJpaEntity.getDtInicio(),
+                    servicoOrdemDeServicoJpaEntity.getDtFim(),
+                    servicoOrdemDeServicoJpaEntity.getValorCobrado()));
         }
-        
+
         return servicoOrdemDeServicos;
     }
 }

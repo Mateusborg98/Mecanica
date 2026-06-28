@@ -19,10 +19,9 @@ public class PecaMapper {
     }
 
     public Peca toDomain(PecaJpaEntity pecaJpaEntity) {
-        return Peca.builder()
-                .id(pecaJpaEntity.getId())
-                .nome(pecaJpaEntity.getNome())
-                .marca(pecaJpaEntity.getMarca())
-                .preco(pecaJpaEntity.getPreco()).build();
+        return new Peca(pecaJpaEntity.getId(),
+                pecaJpaEntity.getNome(),
+                pecaJpaEntity.getMarca(),
+                pecaJpaEntity.getPreco());
     }
 }

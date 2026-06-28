@@ -30,10 +30,41 @@ public class OrdemDeServico {
 
     private BigDecimal valorTotalOs;
 
-    private final List<PecaOrdemDeServico> pecas = new ArrayList<>();
-    private final List<ServicoOrdemDeServico> servicos = new ArrayList<>();
+    private List<PecaOrdemDeServico> pecas = new ArrayList<>();
+    private List<ServicoOrdemDeServico> servicos = new ArrayList<>();
 
-    public OrdemDeServico(
+    public OrdemDeServico(UUID id, UUID clienteId, UUID veiculoId, UUID operadorId, StatusOrdemDeServicoEnum status,
+            LocalDateTime dtInicioOs, LocalDateTime dtFimOs, BigDecimal valorTotalOs, List<PecaOrdemDeServico> pecas,
+            List<ServicoOrdemDeServico> servicos) {
+
+        validarIdentificador(clienteId, "Cliente");
+        validarIdentificador(veiculoId, "Veículo");
+        validarIdentificador(operadorId, "Operador");
+
+        this.id = id;
+        this.clienteId = clienteId;
+        this.veiculoId = veiculoId;
+        this.operadorId = operadorId;
+        this.status = status;
+        this.dtInicioOs = dtInicioOs;
+        this.dtFimOs = dtFimOs;
+        this.valorTotalOs = valorTotalOs;
+        this.pecas = pecas;
+        this.servicos = servicos;
+    }
+
+    public OrdemDeServico(UUID clienteId, UUID veiculoId, UUID operadorId) {
+
+        validarIdentificador(clienteId, "Cliente");
+        validarIdentificador(veiculoId, "Veículo");
+        validarIdentificador(operadorId, "Operador");
+
+        this.clienteId = clienteId;
+        this.veiculoId = veiculoId;
+        this.operadorId = operadorId;
+    }
+
+    public void atualizarOrdemDeServico(
             UUID clienteId,
             UUID veiculoId,
             UUID operadorId) {
@@ -198,4 +229,5 @@ public class OrdemDeServico {
     public int hashCode() {
         return getClass().hashCode();
     }
+
 }

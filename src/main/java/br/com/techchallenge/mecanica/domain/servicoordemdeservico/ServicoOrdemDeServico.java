@@ -21,6 +21,16 @@ public class ServicoOrdemDeServico {
     private LocalDateTime dtFim;
     private BigDecimal valorCobrado;
 
+    public ServicoOrdemDeServico(UUID id, Servico servico, StatusServicoEnum status, LocalDateTime dtInicio,
+            LocalDateTime dtFim, BigDecimal valorCobrado) {
+        this.id = id;
+        this.servico = servico;
+        this.status = status;
+        this.dtInicio = dtInicio;
+        this.dtFim = dtFim;
+        this.valorCobrado = valorCobrado;
+    }
+
     public ServicoOrdemDeServico(UUID id, Servico servico, BigDecimal valorCobrado) {
         this.id = id;
         this.servico = servico;

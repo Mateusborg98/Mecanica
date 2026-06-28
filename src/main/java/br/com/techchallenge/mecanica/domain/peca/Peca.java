@@ -20,7 +20,19 @@ public class Peca {
     private boolean ativo;
     private LocalDateTime dataInativacao;
 
+    public Peca(String nome, String marca, BigDecimal preco) {
+        validarNome(nome);
+        validarPreco(preco);
+
+        this.nome = nome;
+        this.marca = marca;
+        this.preco = preco;
+        this.ativo = true;
+        this.dataInativacao = null;
+    }
+
     public Peca(
+            UUID id,
             String nome,
             String marca,
             BigDecimal preco) {

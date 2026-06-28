@@ -23,6 +23,32 @@ public class Veiculo {
     private LocalDateTime dataInativacao;
 
     public Veiculo(
+            UUID id,
+            Placa placa,
+            String marca,
+            String modelo,
+            Integer ano,
+            UUID clienteId) {
+
+        validarMarca(marca);
+        validarModelo(modelo);
+        validarAno(ano);
+
+        if (clienteId == null) {
+            throw new IllegalArgumentException(
+                    "Cliente obrigatório");
+        }
+
+        this.placa = placa;
+        this.marca = marca;
+        this.modelo = modelo;
+        this.ano = ano;
+        this.clienteId = clienteId;
+        this.ativo = true;
+        this.dataInativacao = null;
+    }
+
+    public Veiculo(
             Placa placa,
             String marca,
             String modelo,
