@@ -6,9 +6,12 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import br.com.techchallenge.mecanica.application.gateway.ClienteGateway;
 import br.com.techchallenge.mecanica.application.gateway.VeiculoGateway;
+import br.com.techchallenge.mecanica.domain.cliente.Cliente;
 import br.com.techchallenge.mecanica.domain.exception.CpfInvalidoException;
 import br.com.techchallenge.mecanica.domain.exception.PlacaInvalidaException;
+import br.com.techchallenge.mecanica.domain.exception.RegraNegocioException;
 import br.com.techchallenge.mecanica.domain.veiculo.Veiculo;
 import br.com.techchallenge.mecanica.infrastructure.persistence.entity.VeiculoJpaEntity;
 import br.com.techchallenge.mecanica.infrastructure.persistence.mapper.VeiculoMapper;
@@ -21,11 +24,16 @@ public class VeiculoGatewayImpl implements VeiculoGateway {
 
     private final VeiculoJpaRepository repository;
     private final VeiculoMapper mapper;
+    private final ClienteGateway clienteGateway;
 
     @Override
     public Veiculo salvar(Veiculo veiculo) throws PlacaInvalidaException, CpfInvalidoException {
 
-        VeiculoJpaEntity entity = mapper.toJpaEntity(veiculo);
+        Cliente cliente = clienteGateway.buscarPorId(veiculo.getClienteId())
+                .orElseThrow(() -> new RegraNegocioException(
+                        "Cliente não encontrado: " + veiculo.getClienteId()));
+
+        VeiculoJpaEntity entity = mapper.toJpaEntity(veiculo, cliente);
 
         VeiculoJpaEntity salvo = repository.save(entity);
 

@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.techchallenge.mecanica.application.dto.veiculo.AtualizarVeiculoInput;
+import br.com.techchallenge.mecanica.application.dto.veiculo.CriarVeiculoInput;
+import br.com.techchallenge.mecanica.application.usecase.cliente.BuscarClientePorIdUseCase;
 import br.com.techchallenge.mecanica.application.usecase.veiculo.AlterarClienteDoVeiculoUseCase;
 import br.com.techchallenge.mecanica.application.usecase.veiculo.AtualizarVeiculoUseCase;
 import br.com.techchallenge.mecanica.application.usecase.veiculo.BuscarVeiculoPorIdUseCase;
@@ -21,13 +24,13 @@ import br.com.techchallenge.mecanica.application.usecase.veiculo.BuscarVeiculoPo
 import br.com.techchallenge.mecanica.application.usecase.veiculo.CriarVeiculoUseCase;
 import br.com.techchallenge.mecanica.application.usecase.veiculo.InativarVeiculoUseCase;
 import br.com.techchallenge.mecanica.application.usecase.veiculo.ListarVeiculosUseCase;
+import br.com.techchallenge.mecanica.domain.cliente.Cliente;
 import br.com.techchallenge.mecanica.domain.veiculo.Veiculo;
-import br.com.techchallenge.mecanica.infrastructure.persistence.mapper.VeiculoMapper;
 import br.com.techchallenge.mecanica.presentation.dto.veiculo.AtualizarClienteDoVeiculoRequest;
 import br.com.techchallenge.mecanica.presentation.dto.veiculo.AtualizarVeiculoRequest;
 import br.com.techchallenge.mecanica.presentation.dto.veiculo.CriarVeiculoRequest;
 import br.com.techchallenge.mecanica.presentation.dto.veiculo.VeiculoResponse;
-import io.swagger.v3.oas.annotations.Operation;
+import br.com.techchallenge.mecanica.presentation.mapper.VeiculoPresentationMapper;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -44,23 +47,28 @@ public class VeiculoController {
     private final BuscarVeiculoPorPlacaUseCase buscarVeiculoPorPlacaUseCase;
     private final ListarVeiculosUseCase listarVeiculosUseCase;
     private final InativarVeiculoUseCase inativarVeiculoUseCase;
+    private final BuscarClientePorIdUseCase buscarClientePorIdUseCase;
 
-    private final VeiculoMapper veiculoMapper;
+    private final VeiculoPresentationMapper veiculoPresentationMapper;
 
     @PutMapping("/{id}")
-    @Operation(summary = "Atualizar veículo")
     public ResponseEntity<VeiculoResponse> atualizar(
             @PathVariable UUID id,
             @RequestBody AtualizarVeiculoRequest request) {
 
-        Veiculo veiculo = atualizarVeiculoUseCase.executar(id, request);
+        AtualizarVeiculoInput input = veiculoPresentationMapper.toAtualizarVeiculoInput(request);
+
+        Veiculo veiculo = atualizarVeiculoUseCase.executar(
+                id,
+                input);
+
+        Cliente cliente = buscarClientePorIdUseCase.executar(veiculo.getClienteId());
 
         return ResponseEntity.ok(
-                veiculoMapper.toResponse(veiculo));
+                veiculoPresentationMapper.toResponse(veiculo, cliente));
     }
 
     @PutMapping("/{id}/cliente")
-    @Operation(summary = "Alterar cliente do veículo")
     public ResponseEntity<VeiculoResponse> alterarCliente(
             @PathVariable UUID id,
             @RequestBody AtualizarClienteDoVeiculoRequest request) {
@@ -69,54 +77,61 @@ public class VeiculoController {
                 id,
                 request.clienteId());
 
+        Cliente cliente = buscarClientePorIdUseCase.executar(veiculo.getClienteId());
+
         return ResponseEntity.ok(
-                veiculoMapper.toResponse(veiculo));
+                veiculoPresentationMapper.toResponse(veiculo, cliente));
     }
 
     @PostMapping
-    @Operation(summary = "Criar veículo")
-    public ResponseEntity<VeiculoResponse> criar(@RequestBody CriarVeiculoRequest request) {
+    public ResponseEntity<VeiculoResponse> criar(
+            @RequestBody CriarVeiculoRequest request) {
 
-        Veiculo veiculo = criarVeiculoUseCase.executar(request);
+        CriarVeiculoInput input = veiculoPresentationMapper.toCriarVeiculoInput(request);
+
+        Veiculo veiculo = criarVeiculoUseCase.executar(input);
+        Cliente cliente = buscarClientePorIdUseCase.executar(veiculo.getClienteId());
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(veiculoMapper.toResponse(veiculo));
+                .body(veiculoPresentationMapper.toResponse(veiculo, cliente));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Buscar veículo por ID (UUID)")
     public ResponseEntity<VeiculoResponse> buscarPorId(@PathVariable UUID id) {
 
         Veiculo veiculo = buscarVeiculoPorIdUseCase.executar(id);
+        Cliente cliente = buscarClientePorIdUseCase.executar(veiculo.getClienteId());
 
         return ResponseEntity.ok(
-                veiculoMapper.toResponse(veiculo));
+                veiculoPresentationMapper.toResponse(veiculo, cliente));
     }
 
     @GetMapping("/placa/{placa}")
-    @Operation(summary = "Buscar veículo por placa")
     public ResponseEntity<VeiculoResponse> buscarPorPlaca(@PathVariable String placa) {
 
         Veiculo veiculo = buscarVeiculoPorPlacaUseCase.executar(placa);
+        Cliente cliente = buscarClientePorIdUseCase.executar(veiculo.getClienteId());
 
         return ResponseEntity.ok(
-                veiculoMapper.toResponse(veiculo));
+                veiculoPresentationMapper.toResponse(veiculo, cliente));
     }
 
     @GetMapping
-    @Operation(summary = "Listar veículos cadastrados")
     public ResponseEntity<List<VeiculoResponse>> listar() {
 
         List<Veiculo> veiculos = listarVeiculosUseCase.executar();
 
-        return ResponseEntity.ok(
-                veiculos.stream()
-                        .map(veiculoMapper::toResponse)
-                        .toList());
+        List<VeiculoResponse> responses = veiculos.stream()
+                .map(veiculo -> {
+                    Cliente cliente = buscarClientePorIdUseCase.executar(veiculo.getClienteId());
+                    return veiculoPresentationMapper.toResponse(veiculo, cliente);
+                })
+                .toList();
+
+        return ResponseEntity.ok(responses);
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Inativar veículo")
     public ResponseEntity<Void> inativar(@PathVariable UUID id) {
 
         inativarVeiculoUseCase.executar(id);

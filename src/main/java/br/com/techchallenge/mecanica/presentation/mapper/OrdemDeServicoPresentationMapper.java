@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import br.com.techchallenge.mecanica.domain.cliente.Cliente;
 import br.com.techchallenge.mecanica.domain.ordemdeservico.OrdemDeServico;
 import br.com.techchallenge.mecanica.presentation.dto.cliente.ClienteResponseResumo;
+import br.com.techchallenge.mecanica.presentation.dto.ordemDeServico.OrdemDeServicoResponse;
 import br.com.techchallenge.mecanica.presentation.dto.ordemDeServico.OrdemDeServicoResponseResumo;
 
 @Component
@@ -15,7 +16,18 @@ public class OrdemDeServicoPresentationMapper {
 
     VeiculoPresentationMapper veiculoPresentationMapper = new VeiculoPresentationMapper();
 
-    public OrdemDeServicoResponseResumo toResponse(OrdemDeServico ordemDeServico) {
+    public OrdemDeServicoResponse toResponse(OrdemDeServico ordemDeServico) {
+
+        return new OrdemDeServicoResponse(
+                ordemDeServico.getId(),
+                ordemDeServico.getStatus().name(),
+                String.valueOf(ordemDeServico.getClienteId()),
+                String.valueOf(ordemDeServico.getVeiculoId()),
+                ordemDeServico.getValorTotalOs(),
+                ordemDeServico.getDtInicioOs());
+    }
+
+    public OrdemDeServicoResponseResumo toResumoResponse(OrdemDeServico ordemDeServico) {
 
         return new OrdemDeServicoResponseResumo(
                 ordemDeServico.getId(),

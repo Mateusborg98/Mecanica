@@ -14,10 +14,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.techchallenge.mecanica.application.gateway.PecaGateway;
+import br.com.techchallenge.mecanica.application.usecase.peca.AtualizarPecaUseCase;
+import br.com.techchallenge.mecanica.application.usecase.peca.BuscarPecaPorIdUseCase;
+import br.com.techchallenge.mecanica.application.usecase.peca.CriarPecaUseCase;
+import br.com.techchallenge.mecanica.application.usecase.peca.InativarPecaUseCase;
+import br.com.techchallenge.mecanica.application.usecase.peca.ListarPecasUseCase;
+import br.com.techchallenge.mecanica.domain.peca.Peca;
 import br.com.techchallenge.mecanica.presentation.dto.peca.CreatePecaRequestDto;
 import br.com.techchallenge.mecanica.presentation.dto.peca.PecaResponseDto;
 import br.com.techchallenge.mecanica.presentation.dto.peca.UpdatePecaRequestDto;
+import br.com.techchallenge.mecanica.presentation.mapper.PecaPresentationMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -28,25 +34,38 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PecaController {
 
-    private final PecaGateway service;
+    private final CriarPecaUseCase criarPecaUseCase;
+    private final BuscarPecaPorIdUseCase buscarPecaPorIdUseCase;
+    private final ListarPecasUseCase listarPecasUseCase;
+    private final AtualizarPecaUseCase atualizarPecaUseCase;
+    private final InativarPecaUseCase inativarPecaUseCase;
+    private final PecaPresentationMapper mapper;
 
     @Operation(summary = "Criar peça")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public PecaResponseDto criar(@RequestBody CreatePecaRequestDto request) {
-        return service.criar(request);
+        Peca peca = criarPecaUseCase.executar(
+                mapper.toInput(request));
+
+        return mapper.toResponse(peca);
     }
 
     @Operation(summary = "Buscar peça por ID (UUID)")
     @GetMapping("/{id}")
     public PecaResponseDto buscarPorId(@PathVariable UUID id) {
-        return service.buscarPorId(id);
+        Peca peca = buscarPecaPorIdUseCase.executar(id);
+
+        return mapper.toResponse(peca);
     }
 
     @Operation(summary = "Listar peças cadastradas (catálogo)")
     @GetMapping
     public List<PecaResponseDto> listar() {
-        return service.listar();
+        return listarPecasUseCase.executar()
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
     @Operation(summary = "Atualizar peça através do ID (UUID)")
@@ -54,13 +73,17 @@ public class PecaController {
     public PecaResponseDto atualizar(
             @PathVariable UUID id,
             @RequestBody UpdatePecaRequestDto request) {
-        return service.atualizar(id, request);
+        Peca peca = atualizarPecaUseCase.executar(
+                id,
+                mapper.toInput(request));
+
+        return mapper.toResponse(peca);
     }
 
-    @Operation(summary = "Deletar peça através do ID (UUID)")
+    @Operation(summary = "Inativar peça através do ID (UUID)")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletar(@PathVariable UUID id) {
-        service.deletar(id);
+        inativarPecaUseCase.executar(id);
     }
 }

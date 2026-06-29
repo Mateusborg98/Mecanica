@@ -1,5 +1,6 @@
 package br.com.techchallenge.mecanica.infrastructure.persistence.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,5 +14,5 @@ public interface VeiculoJpaRepository extends JpaRepository<VeiculoJpaEntity, UU
 
     Optional<VeiculoJpaEntity> findByPlaca(String placa);
 
-    Optional<VeiculoJpaEntity> findByClienteJpaEntityId(UUID id);
+    List<VeiculoJpaEntity> findByClienteJpaEntityId(UUID id);
 }
