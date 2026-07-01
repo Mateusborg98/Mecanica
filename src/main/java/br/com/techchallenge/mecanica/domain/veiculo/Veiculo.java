@@ -35,10 +35,11 @@ public class Veiculo {
         validarAno(ano);
 
         if (clienteId == null) {
-            throw new IllegalArgumentException(
+            throw new RegraNegocioException(
                     "Cliente obrigatório");
         }
 
+        this.id = id;
         this.placa = placa;
         this.marca = marca;
         this.modelo = modelo;
@@ -60,7 +61,7 @@ public class Veiculo {
         validarAno(ano);
 
         if (clienteId == null) {
-            throw new IllegalArgumentException(
+            throw new RegraNegocioException(
                     "Cliente obrigatório");
         }
 
@@ -92,7 +93,7 @@ public class Veiculo {
     public void alterarCliente(UUID clienteId) {
 
         if (clienteId == null) {
-            throw new IllegalArgumentException(
+            throw new RegraNegocioException(
                     "Cliente obrigatório");
         }
 
@@ -100,7 +101,7 @@ public class Veiculo {
     }
 
     public void inativar() {
-        if (!Boolean.TRUE.equals(ativo) && dataInativacao != null) {
+        if (!ativo) {
             throw new RegraNegocioException(
                     "Veículo já está inativo");
         }
@@ -111,7 +112,7 @@ public class Veiculo {
     private void validarMarca(String marca) {
 
         if (marca == null || marca.isBlank()) {
-            throw new IllegalArgumentException(
+            throw new RegraNegocioException(
                     "Marca obrigatória");
         }
     }
@@ -119,7 +120,7 @@ public class Veiculo {
     private void validarModelo(String modelo) {
 
         if (modelo == null || modelo.isBlank()) {
-            throw new IllegalArgumentException(
+            throw new RegraNegocioException(
                     "Modelo obrigatório");
         }
     }
@@ -128,9 +129,9 @@ public class Veiculo {
 
         if (ano == null
                 || ano < 1900
-                || ano > LocalDate.now().getYear()) {
+                || ano > LocalDate.now().getYear() + 1) {
 
-            throw new IllegalArgumentException(
+            throw new RegraNegocioException(
                     "Ano inválido");
         }
     }

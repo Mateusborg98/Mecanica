@@ -66,7 +66,7 @@ public class Cliente {
     }
 
     public void inativar() {
-        if (!Boolean.TRUE.equals(this.ativo) && dataInativacao != null) {
+        if (!ativo) {
             throw new RegraNegocioException(
                     "Cliente já está inativo");
         }
@@ -75,22 +75,19 @@ public class Cliente {
     }
 
     private void validarNome(String nome) {
-
         if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("Nome obrigatório");
+            throw new RegraNegocioException("Nome obrigatório");
         }
     }
 
     private void validarEmail(String email) {
-
         if (email == null || !email.contains("@")) {
-            throw new IllegalArgumentException("Email inválido");
+            throw new RegraNegocioException("Email inválido");
         }
     }
 
     @Override
     public boolean equals(Object o) {
-
         if (this == o) {
             return true;
         }
@@ -98,7 +95,6 @@ public class Cliente {
         if (!(o instanceof Cliente other)) {
             return false;
         }
-
         return id != null && id.equals(other.getId());
     }
 

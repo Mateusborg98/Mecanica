@@ -49,8 +49,12 @@ public class OrdemDeServico {
         this.dtInicioOs = dtInicioOs;
         this.dtFimOs = dtFimOs;
         this.valorTotalOs = valorTotalOs;
-        this.pecas = pecas;
-        this.servicos = servicos;
+        this.pecas = pecas == null
+                ? new ArrayList<>()
+                : new ArrayList<>(pecas);
+        this.servicos = servicos == null
+                ? new ArrayList<>()
+                : new ArrayList<>(servicos);
     }
 
     public OrdemDeServico(UUID clienteId, UUID veiculoId, UUID operadorId) {
@@ -62,6 +66,9 @@ public class OrdemDeServico {
         this.clienteId = clienteId;
         this.veiculoId = veiculoId;
         this.operadorId = operadorId;
+
+        this.status = StatusOrdemDeServicoEnum.RECEBIDA;
+        this.valorTotalOs = BigDecimal.ZERO;
     }
 
     public void atualizarOrdemDeServico(
@@ -76,90 +83,65 @@ public class OrdemDeServico {
         this.clienteId = clienteId;
         this.veiculoId = veiculoId;
         this.operadorId = operadorId;
-
-        this.status = StatusOrdemDeServicoEnum.RECEBIDA;
-        this.valorTotalOs = BigDecimal.ZERO;
     }
 
     public void iniciarDiagnostico() {
-
         validarStatus(StatusOrdemDeServicoEnum.RECEBIDA);
-
         this.status = StatusOrdemDeServicoEnum.EM_DIAGNOSTICO;
     }
 
     public void aguardarAprovacao() {
-
         validarStatus(StatusOrdemDeServicoEnum.EM_DIAGNOSTICO);
-
         this.status = StatusOrdemDeServicoEnum.AGUARDANDO_APROVACAO;
     }
 
     public void aprovarOrcamento(LocalDateTime dataHoraInicio) {
-
         validarStatus(StatusOrdemDeServicoEnum.AGUARDANDO_APROVACAO);
-
         this.status = StatusOrdemDeServicoEnum.EM_EXECUCAO;
         this.dtInicioOs = dataHoraInicio;
     }
 
     public void negarOrcamento() {
-
         validarStatus(StatusOrdemDeServicoEnum.AGUARDANDO_APROVACAO);
-
         this.status = StatusOrdemDeServicoEnum.EM_DIAGNOSTICO;
     }
 
     public void finalizar(LocalDateTime dataHoraFim) {
-
         validarStatus(StatusOrdemDeServicoEnum.EM_EXECUCAO);
-
         this.status = StatusOrdemDeServicoEnum.FINALIZADA;
         this.dtFimOs = dataHoraFim;
     }
 
     public void entregar() {
-
         validarStatus(StatusOrdemDeServicoEnum.FINALIZADA);
-
         this.status = StatusOrdemDeServicoEnum.ENTREGUE;
     }
 
     public void adicionarServico(ServicoOrdemDeServico servico) {
-
         if (servico == null) {
             throw new RegraNegocioException(
                     "Serviço não pode ser nulo");
         }
-
         if (status == StatusOrdemDeServicoEnum.FINALIZADA
                 || status == StatusOrdemDeServicoEnum.ENTREGUE) {
-
             throw new RegraNegocioException(
                     "Não é possível alterar uma OS finalizada");
         }
-
         servicos.add(servico);
-
         recalcularValorTotal();
     }
 
     public void adicionarPeca(PecaOrdemDeServico peca) {
-
         if (peca == null) {
             throw new RegraNegocioException(
                     "Peça não pode ser nula");
         }
-
         if (status == StatusOrdemDeServicoEnum.FINALIZADA
                 || status == StatusOrdemDeServicoEnum.ENTREGUE) {
-
             throw new RegraNegocioException(
                     "Não é possível alterar uma OS finalizada");
         }
-
         pecas.add(peca);
-
         recalcularValorTotal();
     }
 
@@ -172,39 +154,30 @@ public class OrdemDeServico {
     }
 
     private void recalcularValorTotal() {
-
         BigDecimal total = BigDecimal.ZERO;
-
         for (ServicoOrdemDeServico servico : servicos) {
-
             total = total.add(
                     servico.getServico().getPreco());
         }
-
         for (PecaOrdemDeServico peca : pecas) {
             total = total.add(peca.calcularValorTotal());
         }
-
         this.valorTotalOs = total;
     }
 
     private void validarStatus(
             StatusOrdemDeServicoEnum statusEsperado) {
-
         if (this.status != statusEsperado) {
-
             throw new RegraNegocioException(
                     "Transição inválida. Status atual: "
-                            + this.status);
+                            + this.status + ", Status esperado: " + statusEsperado);
         }
     }
 
     private void validarIdentificador(
             UUID id,
             String entidade) {
-
         if (id == null) {
-
             throw new RegraNegocioException(
                     entidade + " obrigatório");
         }
@@ -212,15 +185,12 @@ public class OrdemDeServico {
 
     @Override
     public boolean equals(Object o) {
-
         if (this == o) {
             return true;
         }
-
         if (!(o instanceof OrdemDeServico other)) {
             return false;
         }
-
         return id != null
                 && id.equals(other.getId());
     }

@@ -61,7 +61,7 @@ public class Peca {
     }
 
     public void inativar() {
-        if (!Boolean.TRUE.equals(ativo) && dataInativacao != null) {
+        if (!ativo) {
             throw new PecaNaoEncontradaException(
                     "Peca já está inativo");
         }
