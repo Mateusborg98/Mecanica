@@ -1,0 +1,57 @@
+package br.com.techchallenge.mecanica.infrastructure.persistence.entity;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Setter
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class PecaOrdemDeServicoJpaEntity {
+    @Id
+    @GeneratedValue
+    private UUID id;
+
+    @ManyToOne
+    @JoinColumn(name = "ordem_servico_id")
+    private OrdemDeServicoJpaEntity ordemDeServicoJpaEntity;
+
+    @ManyToOne
+    @JoinColumn(name = "peca_id")
+    private PecaJpaEntity pecaJpaEntity;
+
+    @Column(nullable = false)
+    private Integer quantidade;
+
+    @Column(nullable = false)
+    private BigDecimal valorUnitario;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof PecaOrdemDeServicoJpaEntity other))
+            return false;
+        return id != null && id.equals(other.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+}
