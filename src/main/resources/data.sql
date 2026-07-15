@@ -1,242 +1,83 @@
--- =========================================================
--- CLIENTES
--- =========================================================
-INSERT INTO cliente (id, nome, cpf_cnpj, contato, email) VALUES
-(gen_random_uuid(), 'João da Silva',      '12345678900', '11999999999', 'joao@email.com'),
-(gen_random_uuid(), 'Maria Oliveira',     '98765432100', '11988888888', 'maria@email.com'),
-(gen_random_uuid(), 'Carlos Pereira',     '45678912300', '11977777777', 'carlos@email.com'),
-(gen_random_uuid(), 'Fernanda Souza',     '74185296300', '11966666666', 'fernanda@email.com'),
-(gen_random_uuid(), 'Ricardo Mendes',     '85274196300', '11955555555', 'ricardo@email.com'),
-(gen_random_uuid(), 'Patricia Lima',      '96385274100', '11944444444', 'patricia@email.com');
+-- Dados determinísticos e idempotentes para desenvolvimento Docker.
 
--- =========================================================
--- VEÍCULOS
--- =========================================================
-INSERT INTO veiculo (id, placa, marca, modelo, ano, cliente_id) VALUES
-(gen_random_uuid(), 'ABC1D23', 'Honda',      'Civic',       2020,
- (SELECT id FROM cliente WHERE cpf_cnpj = '12345678900')),
-
-(gen_random_uuid(), 'XYZ9Z99', 'Volkswagen', 'Gol',         2019,
- (SELECT id FROM cliente WHERE cpf_cnpj = '98765432100')),
-
-(gen_random_uuid(), 'BRA2E45', 'Toyota',     'Corolla',     2022,
- (SELECT id FROM cliente WHERE cpf_cnpj = '45678912300')),
-
-(gen_random_uuid(), 'CAR5F67', 'Chevrolet',  'Onix',        2021,
- (SELECT id FROM cliente WHERE cpf_cnpj = '74185296300')),
-
-(gen_random_uuid(), 'MEC7G89', 'Hyundai',    'HB20',        2023,
- (SELECT id FROM cliente WHERE cpf_cnpj = '85274196300')),
-
-(gen_random_uuid(), 'TOP1H11', 'Fiat',       'Argo',        2018,
- (SELECT id FROM cliente WHERE cpf_cnpj = '96385274100'));
-
--- =========================================================
--- OPERADORES
--- =========================================================
-INSERT INTO operador (
-    id,
-    nome,
-    matricula,
-    email,
-    contato
-)
+INSERT INTO cliente_jpa_entity
+    (id, nome, cpf_cnpj, contato, email, ativo, data_inativacao)
 VALUES
-(gen_random_uuid(), 'Administrador', 1, 'admin@email.com',     '11999999999'),
-(gen_random_uuid(), 'Carlos Mecânico', 2, 'carlos@oficina.com', '11911111111'),
-(gen_random_uuid(), 'Marcos Técnico', 3, 'marcos@oficina.com',  '11922222222'),
-(gen_random_uuid(), 'Ana Diagnóstico', 4, 'ana@oficina.com',    '11933333333');
+    ('10000000-0000-0000-0000-000000000001', 'João da Silva', '52998224725', '11999999999', 'joao@email.com', true, NULL),
+    ('10000000-0000-0000-0000-000000000002', 'Maria Oliveira', '11144477735', '11988888888', 'maria@email.com', true, NULL),
+    ('10000000-0000-0000-0000-000000000003', 'Carlos Pereira', '12345678909', '11977777777', 'carlos@email.com', true, NULL)
+ON CONFLICT (id) DO NOTHING;
 
--- =========================================================
--- PEÇAS (CATÁLOGO)
--- =========================================================
-INSERT INTO peca (id, nome, marca, preco) VALUES
-(gen_random_uuid(), 'Filtro de óleo',          'Bosch',       50.00),
-(gen_random_uuid(), 'Pneu Aro 16',             'Michelin',   450.00),
-(gen_random_uuid(), 'Pastilha de freio',       'Fras-le',    180.00),
-(gen_random_uuid(), 'Bateria 60Ah',            'Moura',      550.00),
-(gen_random_uuid(), 'Amortecedor dianteiro',   'Monroe',     380.00),
-(gen_random_uuid(), 'Correia dentada',         'Contitech',  220.00),
-(gen_random_uuid(), 'Velas de ignição',        'NGK',        120.00),
-(gen_random_uuid(), 'Filtro de ar',            'Mahle',       65.00),
-(gen_random_uuid(), 'Óleo 5W30',               'Mobil',       45.00);
-
--- =========================================================
--- ESTOQUE
--- =========================================================
-INSERT INTO estoque (id, peca_id, quantidade) VALUES
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Filtro de óleo'), 50),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Pneu Aro 16'), 20),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Pastilha de freio'), 35),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Bateria 60Ah'), 15),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Amortecedor dianteiro'), 18),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Correia dentada'), 25),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Velas de ignição'), 40),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Filtro de ar'), 45),
-(gen_random_uuid(), (SELECT id FROM peca WHERE nome = 'Óleo 5W30'), 120);
-
--- =========================================================
--- SERVIÇOS (CATÁLOGO)
--- =========================================================
-INSERT INTO servico (id, descricao, preco) VALUES
-(gen_random_uuid(), 'Troca de óleo',              120.00),
-(gen_random_uuid(), 'Troca de pneu',              300.00),
-(gen_random_uuid(), 'Alinhamento',                150.00),
-(gen_random_uuid(), 'Balanceamento',              120.00),
-(gen_random_uuid(), 'Revisão completa',           950.00),
-(gen_random_uuid(), 'Troca de bateria',           180.00),
-(gen_random_uuid(), 'Diagnóstico eletrônico',     220.00),
-(gen_random_uuid(), 'Troca de correia dentada',   600.00),
-(gen_random_uuid(), 'Troca de freios',            450.00);
-
--- =========================================================
--- ORDEM DE SERVIÇO 1
--- =========================================================
-INSERT INTO ordem_de_servico (
-    id,
-    cliente_id,
-    veiculo_id,
-    operador_id,
-    status,
-    dt_inicio_os,
-    dt_fim_os,
-    valor_total_os
-)
-VALUES (
-    gen_random_uuid(),
-    (SELECT id FROM cliente WHERE cpf_cnpj = '12345678900'),
-    (SELECT id FROM veiculo WHERE placa = 'ABC1D23'),
-    (SELECT id FROM operador WHERE matricula = 1),
-    'FINALIZADA',
-    NOW() - INTERVAL '5 hours',
-    NOW() - INTERVAL '2 hours',
-    620.00
-);
-
--- =========================================================
--- ORDEM DE SERVIÇO 2
--- =========================================================
-INSERT INTO ordem_de_servico (
-    id,
-    cliente_id,
-    veiculo_id,
-    operador_id,
-    status,
-    dt_inicio_os,
-    dt_fim_os,
-    valor_total_os
-)
-VALUES (
-    gen_random_uuid(),
-    (SELECT id FROM cliente WHERE cpf_cnpj = '98765432100'),
-    (SELECT id FROM veiculo WHERE placa = 'XYZ9Z99'),
-    (SELECT id FROM operador WHERE matricula = 2),
-    'EM_EXECUCAO',
-    NOW() - INTERVAL '3 hours',
-    NULL,
-    780.00
-);
-
--- =========================================================
--- ORDEM DE SERVIÇO 3
--- =========================================================
-INSERT INTO ordem_de_servico (
-    id,
-    cliente_id,
-    veiculo_id,
-    operador_id,
-    status,
-    dt_inicio_os,
-    dt_fim_os,
-    valor_total_os
-)
-VALUES (
-    gen_random_uuid(),
-    (SELECT id FROM cliente WHERE cpf_cnpj = '45678912300'),
-    (SELECT id FROM veiculo WHERE placa = 'BRA2E45'),
-    (SELECT id FROM operador WHERE matricula = 3),
-    'AGUARDANDO_APROVACAO',
-    NOW() - INTERVAL '1 hour',
-    NULL,
-    1450.00
-);
-
--- =========================================================
--- PEÇAS DAS OS
--- =========================================================
-INSERT INTO peca_ordem_de_servico (
-    id,
-    ordem_servico_id,
-    peca_id,
-    quantidade
-)
+INSERT INTO veiculo_jpa_entity
+    (id, placa, marca, modelo, ano, ativo, data_inativacao, cliente_jpa_entity_id)
 VALUES
-(
-    gen_random_uuid(),
-    (SELECT id FROM ordem_de_servico LIMIT 1),
-    (SELECT id FROM peca WHERE nome = 'Filtro de óleo'),
-    1
-),
-(
-    gen_random_uuid(),
-    (SELECT id FROM ordem_de_servico LIMIT 1),
-    (SELECT id FROM peca WHERE nome = 'Óleo 5W30'),
-    4
-),
-(
-    gen_random_uuid(),
-    (SELECT id FROM ordem_de_servico OFFSET 1 LIMIT 1),
-    (SELECT id FROM peca WHERE nome = 'Pastilha de freio'),
-    1
-),
-(
-    gen_random_uuid(),
-    (SELECT id FROM ordem_de_servico OFFSET 2 LIMIT 1),
-    (SELECT id FROM peca WHERE nome = 'Correia dentada'),
-    1
-);
+    ('20000000-0000-0000-0000-000000000001', 'ABC1D23', 'Honda', 'Civic', 2020, true, NULL, '10000000-0000-0000-0000-000000000001'),
+    ('20000000-0000-0000-0000-000000000002', 'XYZ9Z99', 'Volkswagen', 'Gol', 2019, true, NULL, '10000000-0000-0000-0000-000000000002'),
+    ('20000000-0000-0000-0000-000000000003', 'BRA2E45', 'Toyota', 'Corolla', 2022, true, NULL, '10000000-0000-0000-0000-000000000003')
+ON CONFLICT (id) DO NOTHING;
 
--- =========================================================
--- SERVIÇOS EXECUTADOS NAS OS
--- =========================================================
-INSERT INTO servico_ordem_de_servico (
-    id,
-    ordem_servico_id,
-    servico_id,
-    status,
-    dt_inicio,
-    dt_fim
-)
+INSERT INTO operador_jpa_entity
+    (id, nome, matricula, cargo, email, contato, ativo, data_inativacao)
 VALUES
-(
-    gen_random_uuid(),
-    (SELECT id FROM ordem_de_servico LIMIT 1),
-    (SELECT id FROM servico WHERE descricao = 'Troca de óleo'),
-    'FINALIZADO',
-    NOW() - INTERVAL '4 hours',
-    NOW() - INTERVAL '3 hours 20 minutes'
-),
-(
-    gen_random_uuid(),
-    (SELECT id FROM ordem_de_servico LIMIT 1),
-    (SELECT id FROM servico WHERE descricao = 'Alinhamento'),
-    'FINALIZADO',
-    NOW() - INTERVAL '3 hours',
-    NOW() - INTERVAL '2 hours 20 minutes'
-),
-(
-    gen_random_uuid(),
-    (SELECT id FROM ordem_de_servico OFFSET 1 LIMIT 1),
-    (SELECT id FROM servico WHERE descricao = 'Troca de freios'),
-    'EM_EXECUCAO',
-    NOW() - INTERVAL '2 hours',
-    NULL
-),
-(
-    gen_random_uuid(),
-    (SELECT id FROM ordem_de_servico OFFSET 2 LIMIT 1),
-    (SELECT id FROM servico WHERE descricao = 'Troca de correia dentada'),
-    'AGUARDANDO',
-    NULL,
-    NULL
-);
+    ('30000000-0000-0000-0000-000000000001', 'Administrador', 1, 'ADMINISTRADOR', 'admin@email.com', '11999999999', true, NULL),
+    ('30000000-0000-0000-0000-000000000002', 'Carlos Mecânico', 2, 'MECANICO', 'carlos@oficina.com', '11911111111', true, NULL),
+    ('30000000-0000-0000-0000-000000000003', 'Ana Diagnóstico', 3, 'TECNICO', 'ana@oficina.com', '11933333333', true, NULL)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO peca_jpa_entity
+    (id, nome, marca, preco, ativo, data_inativacao)
+VALUES
+    ('40000000-0000-0000-0000-000000000001', 'Filtro de óleo', 'Bosch', 50.00, true, NULL),
+    ('40000000-0000-0000-0000-000000000002', 'Óleo 5W30', 'Mobil', 45.00, true, NULL),
+    ('40000000-0000-0000-0000-000000000003', 'Pastilha de freio', 'Fras-le', 180.00, true, NULL),
+    ('40000000-0000-0000-0000-000000000004', 'Correia dentada', 'Contitech', 220.00, true, NULL)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO estoque_jpa_entity (id, peca_id, quantidade, versao)
+VALUES
+    ('50000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001', 50, 0),
+    ('50000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000002', 120, 0),
+    ('50000000-0000-0000-0000-000000000003', '40000000-0000-0000-0000-000000000003', 35, 0),
+    ('50000000-0000-0000-0000-000000000004', '40000000-0000-0000-0000-000000000004', 25, 0)
+ON CONFLICT (id) DO NOTHING;
+
+UPDATE estoque_jpa_entity SET versao = 0 WHERE versao IS NULL;
+
+INSERT INTO servico_jpa_entity
+    (id, descricao, preco, ativo, data_inativacao)
+VALUES
+    ('60000000-0000-0000-0000-000000000001', 'Troca de óleo', 120.00, true, NULL),
+    ('60000000-0000-0000-0000-000000000002', 'Alinhamento', 150.00, true, NULL),
+    ('60000000-0000-0000-0000-000000000003', 'Troca de freios', 450.00, true, NULL),
+    ('60000000-0000-0000-0000-000000000004', 'Troca de correia dentada', 600.00, true, NULL)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO ordem_de_servico_jpa_entity
+    (id, cliente_jpa_entity_id, veiculo_jpa_entity_id, operador_jpa_entity_id,
+     status, dt_criacao, dt_inicio_os, dt_fim_os, valor_total_os)
+VALUES
+    ('70000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', 'FINALIZADA', CURRENT_TIMESTAMP - INTERVAL '6 hours', CURRENT_TIMESTAMP - INTERVAL '5 hours', CURRENT_TIMESTAMP - INTERVAL '2 hours', 350.00),
+    ('70000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000002', 'EM_EXECUCAO', CURRENT_TIMESTAMP - INTERVAL '4 hours', CURRENT_TIMESTAMP - INTERVAL '3 hours', NULL, 630.00),
+    ('70000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000003', 'AGUARDANDO_APROVACAO', CURRENT_TIMESTAMP - INTERVAL '2 hours', NULL, NULL, 820.00)
+ON CONFLICT (id) DO NOTHING;
+
+UPDATE ordem_de_servico_jpa_entity
+SET dt_criacao = CURRENT_TIMESTAMP
+WHERE dt_criacao IS NULL;
+
+INSERT INTO peca_ordem_de_servico_jpa_entity
+    (id, ordem_servico_id, peca_id, quantidade, valor_unitario)
+VALUES
+    ('80000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001', 1, 50.00),
+    ('80000000-0000-0000-0000-000000000002', '70000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000002', 4, 45.00),
+    ('80000000-0000-0000-0000-000000000003', '70000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000003', 1, 180.00),
+    ('80000000-0000-0000-0000-000000000004', '70000000-0000-0000-0000-000000000003', '40000000-0000-0000-0000-000000000004', 1, 220.00)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO servico_ordem_de_servico_jpa_entity
+    (id, ordem_servico_id, servico_id, status, dt_inicio, dt_fim, valor_cobrado)
+VALUES
+    ('90000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', '60000000-0000-0000-0000-000000000001', 'FINALIZADO', CURRENT_TIMESTAMP - INTERVAL '4 hours', CURRENT_TIMESTAMP - INTERVAL '3 hours', 120.00),
+    ('90000000-0000-0000-0000-000000000002', '70000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000003', 'EM_EXECUCAO', CURRENT_TIMESTAMP - INTERVAL '2 hours', NULL, 450.00),
+    ('90000000-0000-0000-0000-000000000003', '70000000-0000-0000-0000-000000000003', '60000000-0000-0000-0000-000000000004', 'AGUARDANDO', NULL, NULL, 600.00)
+ON CONFLICT (id) DO NOTHING;
