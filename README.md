@@ -1,12 +1,14 @@
 # Sistema de Oficina Mecânica – Tech Challenge Fase 2
 
-## Descrição
+## Descrição da solução e objetivos da fase
 
 API backend para gestão de ordens de serviço de uma oficina mecânica.
 
 O projeto evolui a entrega da Fase 1 com melhor separação de camadas, regras de domínio mais explícitas, testes automatizados, autenticação JWT, Docker, Kubernetes, Terraform e pipeline de integração contínua com GitHub Actions.
 
 A aplicação permite controlar o ciclo de vida de uma ordem de serviço, desde a abertura com cliente, veículo, serviços e peças, até aprovação de orçamento, alteração de status, baixa de estoque e acompanhamento público pelo cliente.
+
+Nesta fase, o objetivo é disponibilizar a solução de forma reproduzível e observável, com infraestrutura como código, execução conteinerizada, orquestração em Kubernetes, persistência de dados, escalabilidade horizontal e um fluxo automatizado de testes e deploy.
 
 ## Funcionalidades
 
@@ -45,9 +47,11 @@ A aplicação permite controlar o ciclo de vida de uma ordem de serviço, desde 
 - JaCoCo
 - Spring Boot Actuator
 
-## Arquitetura
+## Arquitetura proposta
 
 O projeto segue uma separação em camadas inspirada em Clean Architecture, mantendo as regras de negócio desacopladas de detalhes externos como banco de dados, segurança, controllers e frameworks.
+
+### Componentes da aplicação
 
 Principais camadas:
 
@@ -58,6 +62,81 @@ Principais camadas:
 - `mapper`: conversão entre entidades, DTOs e modelos de persistência.
 
 Essa organização facilita manutenção, testes e evolução da aplicação, pois a regra de negócio não depende diretamente de detalhes de infraestrutura.
+
+```mermaid
+flowchart TB
+    USER["Cliente ou operador"]
+
+    subgraph API["API Spring Boot"]
+        SECURITY["Segurança<br/>Spring Security e JWT"]
+        PRESENTATION["Apresentação<br/>Controllers, DTOs, Validators e Mappers"]
+        APPLICATION["Aplicação<br/>Casos de uso e contratos de gateways"]
+        DOMAIN["Domínio<br/>Entidades, Value Objects e regras de negócio"]
+        PORTS["Portas de saída<br/>Gateway interfaces"]
+        PERSISTENCE["Persistência<br/>GatewayImpl, JPA Repositories e Entities"]
+        NOTIFICATION["Notificação<br/>LogNotificacaoGateway"]
+    end
+
+    DB[("PostgreSQL")]
+    LOG["Log da aplicação"]
+
+    USER -->|"HTTP/JSON"| SECURITY
+    SECURITY --> PRESENTATION
+    PRESENTATION --> APPLICATION
+    APPLICATION --> DOMAIN
+    APPLICATION --> PORTS
+    PERSISTENCE -.->|"Implementa"| PORTS
+    PERSISTENCE -->|"JPA/JDBC"| DB
+    NOTIFICATION -.->|"Implementa NotificacaoGateway"| PORTS
+    NOTIFICATION --> LOG
+```
+
+### Infraestrutura provisionada
+
+```mermaid
+flowchart TB
+    USER["Cliente ou operador"]
+
+    subgraph KIND["Cluster Kubernetes Kind"]
+        API_SERVICE["Service da API<br/>NodePort"]
+        API_DEPLOYMENT["Deployment da API<br/>Spring Boot"]
+        HPA["HorizontalPodAutoscaler"]
+        METRICS["Metrics Server"]
+        DB_SERVICE["Service PostgreSQL<br/>ClusterIP"]
+        DB_DEPLOYMENT["Deployment PostgreSQL"]
+        PVC[("PersistentVolumeClaim")]
+        CONFIG["ConfigMap"]
+        SECRETS["Secrets"]
+    end
+
+    USER -->|"HTTP/JSON"| API_SERVICE
+    API_SERVICE --> API_DEPLOYMENT
+    API_DEPLOYMENT -->|"JDBC"| DB_SERVICE
+    DB_SERVICE --> DB_DEPLOYMENT
+    DB_DEPLOYMENT --> PVC
+    CONFIG --> API_DEPLOYMENT
+    SECRETS --> API_DEPLOYMENT
+    SECRETS --> DB_DEPLOYMENT
+    METRICS --> HPA
+    HPA -->|"Escala réplicas"| API_DEPLOYMENT
+```
+
+O Terraform cria o cluster Kind e provisiona os recursos da aplicação. O PostgreSQL utiliza volume persistente, enquanto `ConfigMap` e `Secrets` fornecem as configurações necessárias aos containers.
+
+### Fluxo de deploy
+
+```mermaid
+flowchart LR
+    DEV["Desenvolvedor"] -->|"Push"| GITHUB["Repositório GitHub"]
+    GITHUB --> ACTIONS["GitHub Actions"]
+    ACTIONS --> TESTS["Testes e JaCoCo"]
+    TESTS --> IMAGE["Build da imagem Docker"]
+    IMAGE --> TERRAFORM["Terraform cria o cluster Kind"]
+    TERRAFORM --> LOAD["Imagem carregada no cluster"]
+    LOAD --> DEPLOY["Deploy da API e PostgreSQL"]
+    DEPLOY --> HEALTH["Validação do Actuator Health"]
+    HEALTH --> CLEANUP["Diagnóstico e destruição do ambiente de CI"]
+```
 
 ## Segurança
 
@@ -226,7 +305,7 @@ mvn spring-boot:run
 
 O perfil `test` usa `jdbc:h2:mem:testdb`. Esse banco é temporário, existe apenas durante a execução dos testes e não aparece no pgAdmin.
 
-## Execução com Docker Compose
+## Execução local
 
 ### Pré-requisitos
 
@@ -249,7 +328,7 @@ docker compose up --build
 Após subir a aplicação, acesse o Swagger:
 
 ```text
-http://localhost:8080/swagger-ui/index.html
+http://localhost:8082/swagger-ui/index.html
 ```
 
 ## Infraestrutura e DevOps
@@ -293,7 +372,7 @@ docker compose down -v
 docker compose up --build
 ```
 
-### Kubernetes
+## Deploy em Kubernetes
 
 O Kubernetes é utilizado para orquestrar a execução da aplicação em um cluster. Ele é responsável por manter os containers em execução, expor a aplicação internamente por meio de Services, aplicar configurações por ConfigMaps e Secrets, além de permitir escalabilidade por meio do HPA.
 
@@ -333,16 +412,16 @@ kubectl get all,pvc -n mecanica
 Para acessar a aplicação no ambiente Kubernetes local:
 
 ```bash
-kubectl port-forward service/mecanica-api 8080:8080 -n mecanica
+kubectl port-forward service/mecanica-api 8082:8080 -n mecanica
 ```
 
 Depois acesse:
 
 ```text
-http://localhost:8080/swagger-ui/index.html
+http://localhost:8082/swagger-ui/index.html
 ```
 
-### Terraform
+## Provisionamento da infraestrutura com Terraform
 
 O Terraform é utilizado em duas etapas. O módulo `/infra/cluster` cria um cluster Kubernetes Kind local; o módulo `/infra` provisiona no cluster os recursos da aplicação, PostgreSQL, volume persistente, serviços, configurações, secrets e HPA.
 
@@ -445,7 +524,7 @@ Depois acesse:
 http://localhost:8082/swagger-ui/index.html
 ```
 
-### GitHub Actions
+## Pipeline de deploy com GitHub Actions
 
 O GitHub Actions é utilizado como pipeline de integração contínua da aplicação.
 
@@ -480,9 +559,9 @@ O build gera relatório de cobertura com JaCoCo e exige cobertura mínima de 80%
 
 Última validação deste pacote: **91 testes**, sem falhas, **98,58% de cobertura de linhas** e **88,81% de cobertura de branches** no escopo configurado no JaCoCo.
 
-## Documentação
+## Collection completa das APIs
 
-A documentação do projeto contempla:
+Além da collection navegável, a documentação do projeto contempla:
 
 - Domain Storytelling.
 - Event Storming.
@@ -491,6 +570,14 @@ A documentação do projeto contempla:
 - README com instruções de execução local, Docker, Kubernetes, Terraform e GitHub Actions.
 
 Com a aplicação em execução, acesse a collection completa em [Swagger/OpenAPI](http://localhost:8080/swagger-ui/index.html).
+
+O contrato OpenAPI também pode ser consultado em [`/v3/api-docs`](http://localhost:8082/v3/api-docs).
+
+## Vídeo demonstrativo
+
+A demonstração do ambiente em execução está disponível no YouTube:
+
+- [Tech Challenge Fase 2 — demonstração da solução](https://youtu.be/a7jZH_NNxhg)
 
 ## Fluxo principal da ordem de serviço
 
@@ -511,39 +598,3 @@ Com a aplicação em execução, acesse a collection completa em [Swagger/OpenAP
 - O Terraform pode criar um cluster Kind local e também provisiona os recursos da aplicação.
 - O GitHub Actions executa build, testes, Docker, Terraform e deploy end-to-end no Kubernetes.
 - A aplicação possui health check em `/actuator/health`, utilizado pelas probes do Kubernetes.
-
-## Desenho da arquitetura
-
-```mermaid
-flowchart TD
-    DEV["Desenvolvedor"] --> GIT["GitHub Repository"]
-
-    GIT --> ACTIONS["GitHub Actions"]
-
-    ACTIONS --> TESTS["Testes + JaCoCo"]
-    ACTIONS --> DOCKER_BUILD["Build da imagem Docker"]
-    ACTIONS --> TF_CLUSTER["Terraform cria cluster Kind"]
-    ACTIONS --> K8S_CI["Deploy API + PostgreSQL"]
-
-    DEV --> DOCKER["Docker Compose"]
-    DOCKER --> API_LOCAL["API Spring Boot"]
-    DOCKER --> DB_LOCAL["PostgreSQL"]
-
-    DEV --> TERRAFORM["Terraform Cluster + Recursos"]
-    TERRAFORM --> K8S["Kubernetes Local"]
-
-    DEV --> KUBECTL["kubectl"]
-    KUBECTL --> K8S
-
-    K8S --> API_DEPLOY["Deployment API"]
-    K8S --> DB_DEPLOY["Deployment PostgreSQL"]
-    K8S --> SVC_API["Service API"]
-    K8S --> SVC_DB["Service PostgreSQL"]
-    K8S --> CONFIG["ConfigMap + Secrets"]
-    K8S --> HPA["HorizontalPodAutoscaler"]
-    K8S --> PVC["PersistentVolumeClaim PostgreSQL"]
-
-    API_DEPLOY --> ACTUATOR["Actuator Health Check"]
-    API_DEPLOY --> SWAGGER["Swagger/OpenAPI"]
-    API_DEPLOY --> LOG_EMAIL["Notificação simulada por log"]
-```
