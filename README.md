@@ -241,6 +241,46 @@ Nesta entrega, o envio real de e-mail não foi implementado. Em vez disso, foi c
 
 O log é utilizado como mecanismo demonstrável da fase 2 e mantém a arquitetura preparada para uma futura integração com Gmail, SMTP, Amazon SES, SendGrid ou outro provedor, sem acoplar a regra de negócio a uma ferramenta externa.
 
+### Como a notificação funciona
+
+O fluxo ocorre de forma síncrona depois que uma transição de status é concluída com sucesso:
+
+1. Um endpoint de transição de status chama o caso de uso correspondente.
+2. O caso de uso valida a transição e persiste a ordem de serviço atualizada.
+3. `NotificarAlteracaoStatusOrdemUseCase` monta a mensagem com o identificador e o novo status da OS.
+4. A porta `NotificacaoGateway`, definida na camada de aplicação, é acionada.
+5. `LogNotificacaoGateway`, na camada de infraestrutura, registra a simulação no nível `INFO` usando SLF4J.
+
+A notificação é gerada nas transições `iniciar-diagnostico`, `aguardar-aprovacao`, `aprovar-orcamento`, `negar-orcamento`, `finalizar` e `entregar`. Se a ordem não existir ou a transição for inválida, o caso de uso encerra com erro e não registra uma notificação de sucesso.
+
+### Como visualizar e demonstrar
+
+Com a aplicação iniciada pelo Docker Compose, acompanhe os logs em outro terminal:
+
+```bash
+docker compose logs -f api
+```
+
+Depois, autentique-se, obtenha o ID de uma OS e execute no Swagger uma transição compatível com seu status atual, por exemplo:
+
+```http
+POST /ordens-servico/{id}/iniciar-diagnostico
+Authorization: Bearer <token>
+```
+
+Para filtrar somente as notificações no PowerShell:
+
+```powershell
+docker compose logs -f api | Select-String "Simulando envio de e-mail"
+```
+
+No Kubernetes, descubra o nome do pod e acompanhe o mesmo evento com:
+
+```bash
+kubectl get pods -n mecanica
+kubectl logs -n mecanica -f deployment/mecanica-api
+```
+
 Exemplo de log gerado:
 
 ```text
@@ -309,8 +349,34 @@ O perfil `test` usa `jdbc:h2:mem:testdb`. Esse banco é temporário, existe apen
 
 ### Pré-requisitos
 
-- Docker
-- Docker Compose
+- Git.
+- Docker Desktop ou Docker Engine em execução.
+- Docker Compose v2 (`docker compose version`).
+
+Java 21 e Maven são necessários somente para executar a aplicação ou os testes fora dos containers. O repositório inclui Maven Wrapper, portanto não é necessário instalar o Maven globalmente.
+
+### Configuração do ambiente
+
+O caminho recomendado para reprodução é o Docker Compose. Ele cria o PostgreSQL, aguarda o health check do banco e então inicia a API com o perfil `docker`.
+
+| Configuração | Valor padrão no Compose | Finalidade |
+|---|---|---|
+| `SPRING_PROFILES_ACTIVE` | `docker` | Ativa a conexão com o PostgreSQL do container. |
+| `APP_JWT_SECRET` | chave de desenvolvimento definida no Compose | Assina e valida os tokens JWT. |
+| `APP_AUTH_USERNAME` | `admin` | Usuário administrativo inicial. |
+| `APP_AUTH_PASSWORD` | `123` | Senha administrativa inicial. |
+| PostgreSQL | banco/usuário/senha `mecanica` | Persistência local da aplicação. |
+
+Os valores padrão são apenas para desenvolvimento e demonstração. Para substituí-los sem alterar arquivos, defina as variáveis antes de subir o ambiente. Exemplo em PowerShell:
+
+```powershell
+$env:APP_JWT_SECRET="uma-chave-local-com-pelo-menos-32-caracteres"
+$env:APP_AUTH_USERNAME="admin-local"
+$env:APP_AUTH_PASSWORD="senha-local"
+docker compose up --build
+```
+
+Não versione segredos reais. No Kubernetes, configurações não sensíveis ficam em `k8s/app-configmap.yaml` e credenciais ficam nos manifestos `Secret`; em um ambiente produtivo, esses valores devem vir de um gerenciador de segredos.
 
 ### Subindo a aplicação
 
@@ -328,8 +394,29 @@ docker compose up --build
 Após subir a aplicação, acesse o Swagger:
 
 ```text
-http://localhost:8082/swagger-ui/index.html
+http://localhost:8080/swagger-ui/index.html
 ```
+
+Verifique também a saúde da API e o estado dos containers:
+
+```bash
+docker compose ps
+curl http://localhost:8080/actuator/health
+```
+
+Resultado esperado do health check: resposta HTTP `200` contendo `{"status":"UP"}`. A porta `5433` expõe o PostgreSQL para ferramentas instaladas no host; entre os containers, a API acessa `postgres:5432`.
+
+### Roteiro completo de reprodução
+
+1. Clone o repositório e entre em sua raiz.
+2. Confirme os pré-requisitos com `docker --version` e `docker compose version`.
+3. Execute `docker compose up --build -d`.
+4. Aguarde `docker compose ps` indicar os serviços em execução.
+5. Confirme `/actuator/health` e abra o Swagger em `http://localhost:8080/swagger-ui/index.html`.
+6. Faça login com `POST /auth/login`, copie o token e use **Authorize**.
+7. Crie ou consulte uma OS e execute uma transição de status válida.
+8. Confirme a notificação com `docker compose logs api`.
+9. Ao terminar, execute `docker compose down`. Use `docker compose down -v` somente se também quiser apagar os dados persistidos localmente.
 
 ## Infraestrutura e DevOps
 
@@ -547,15 +634,42 @@ Assim, o pipeline demonstra o fluxo completo de CI/CD em um cluster Kubernetes l
 
 ## Testes
 
-O projeto possui testes unitários e de integração para validar regras de domínio, casos de uso e endpoints principais da aplicação.
+O projeto possui testes unitários e de integração. Os testes unitários validam entidades, regras de domínio, casos de uso, gateways e mapeamentos de forma isolada. Os testes de integração carregam o contexto Spring, exercitam rotas com MockMvc e verificam autenticação/autorização. Todos usam o perfil `test` e o banco H2 em memória; portanto, não é necessário iniciar Docker ou PostgreSQL.
 
-Para executar:
+### Pré-requisitos dos testes
 
-```bash
-mvn verify
+- JDK 21 configurado e disponível em `java -version`.
+- Acesso à internet na primeira execução, caso as dependências Maven ainda não estejam no cache local.
+
+Para executar toda a suíte e aplicar a regra mínima de cobertura, use o Maven Wrapper a partir da raiz do projeto:
+
+```powershell
+.\mvnw.cmd clean verify
 ```
 
-O build gera relatório de cobertura com JaCoCo e exige cobertura mínima de 80% das linhas consideradas.
+No Linux ou macOS:
+
+```bash
+./mvnw clean verify
+```
+
+O fluxo executa, nesta ordem: limpeza dos artefatos anteriores, compilação, testes, geração do relatório JaCoCo e verificação do limite de cobertura. O comando termina com `BUILD SUCCESS` quando todos os testes passam e a cobertura exigida é atingida; qualquer falha retorna código diferente de zero, como ocorre no pipeline de CI.
+
+Para executar apenas uma classe durante o desenvolvimento:
+
+```powershell
+.\mvnw.cmd -Dtest=OrdemDeServicoTest test
+```
+
+Artefatos gerados:
+
+| Artefato | Caminho |
+|---|---|
+| Resultado individual dos testes | `target/surefire-reports/` |
+| Relatório HTML de cobertura | `target/site/jacoco/index.html` |
+| Dados brutos do JaCoCo | `target/jacoco.exec` |
+
+O JaCoCo exige no mínimo 80% de cobertura de linhas no escopo configurado no `pom.xml`. Controllers, DTOs, mappers, classes de configuração e a classe de inicialização estão excluídos desse cálculo; ainda assim, rotas e segurança possuem testes de integração dedicados.
 
 Última validação deste pacote: **91 testes**, sem falhas, **98,58% de cobertura de linhas** e **88,81% de cobertura de branches** no escopo configurado no JaCoCo.
 
@@ -569,9 +683,9 @@ Além da collection navegável, a documentação do projeto contempla:
 - Swagger/OpenAPI.
 - README com instruções de execução local, Docker, Kubernetes, Terraform e GitHub Actions.
 
-Com a aplicação em execução, acesse a collection completa em [Swagger/OpenAPI](http://localhost:8080/swagger-ui/index.html).
+Com a aplicação iniciada pelo Docker Compose, acesse a collection completa em [Swagger/OpenAPI](http://localhost:8080/swagger-ui/index.html). No fluxo Kubernetes com port-forward, use `http://localhost:8082/swagger-ui/index.html`.
 
-O contrato OpenAPI também pode ser consultado em [`/v3/api-docs`](http://localhost:8082/v3/api-docs).
+O contrato OpenAPI também pode ser consultado em [`/v3/api-docs`](http://localhost:8080/v3/api-docs) no Docker Compose ou em `http://localhost:8082/v3/api-docs` durante o port-forward do Kubernetes.
 
 ## Vídeo demonstrativo
 
