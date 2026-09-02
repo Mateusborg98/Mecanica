@@ -27,9 +27,8 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      APP_JWT_SECRET: ${APP_JWT_SECRET:-techchallenge-secret-key-jwt-super-segura-2026}
-      APP_AUTH_USERNAME: ${APP_AUTH_USERNAME:-admin}
-      APP_AUTH_PASSWORD: ${APP_AUTH_PASSWORD:-123}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:?Defina JWT_PUBLIC_KEY com a chave publica RSA}
+      JWT_ISSUER: ${JWT_ISSUER:-mecanica-auth}
     ports:
       - "8080:8080"
 

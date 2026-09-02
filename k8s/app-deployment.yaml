@@ -14,11 +14,14 @@ spec:
     metadata:
       labels:
         app: mecanica-api
+      annotations:
+        ad.datadoghq.com/mecanica-api.logs: '[{"source":"java","service":"mecanica-api"}]'
+        ad.datadoghq.com/mecanica-api.checks: '{"openmetrics":{"init_config":{},"instances":[{"openmetrics_endpoint":"http://%%host%%:8080/actuator/prometheus","namespace":"mecanica","metrics":[".*"]}]}}'
     spec:
       containers:
         - name: mecanica-api
           image: mecanica-api:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           envFrom:
@@ -35,17 +38,24 @@ spec:
               memory: "768Mi"
           readinessProbe:
             httpGet:
-              path: /actuator/health
+              path: /actuator/health/readiness
               port: 8080
-            initialDelaySeconds: 90
+            initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
-            failureThreshold: 10
+            failureThreshold: 12
           livenessProbe:
             httpGet:
-              path: /actuator/health
+              path: /actuator/health/liveness
               port: 8080
-            initialDelaySeconds: 120
+            initialDelaySeconds: 60
             periodSeconds: 20
             timeoutSeconds: 5
             failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30

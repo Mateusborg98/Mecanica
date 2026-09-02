@@ -4,6 +4,7 @@ metadata:
   name: mecanica-api-config
   namespace: mecanica
 data:
-  SPRING_PROFILES_ACTIVE: docker
-  SPRING_DATASOURCE_URL: jdbc:postgresql://mecanica-db:5432/mecanica
-  SPRING_JPA_HIBERNATE_DDL_AUTO: update
+  APP_ENVIRONMENT: cloud
+  SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+  SPRING_FLYWAY_ENABLED: "true"
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
