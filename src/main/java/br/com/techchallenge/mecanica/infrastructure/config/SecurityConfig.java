@@ -39,13 +39,7 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**")
                                                 .permitAll()
                                                 .requestMatchers(
-                                                                HttpMethod.POST,
-                                                                "/ordens-servico/*/aprovar-orcamento",
-                                                                "/ordens-servico/*/negar-orcamento")
-                                                .permitAll()
-                                                .requestMatchers(
                                                                 "/error",
-                                                                "/auth/**",
                                                                 "/swagger-ui/**",
                                                                 "/swagger-ui.html",
                                                                 "/v3/api-docs/**",

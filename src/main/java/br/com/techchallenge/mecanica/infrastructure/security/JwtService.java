@@ -1,84 +1,63 @@
 package br.com.techchallenge.mecanica.infrastructure.security;
 
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.util.Date;
+import java.security.PublicKey;
 
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
 
-    /*
-     * IMPORTANTE:
-     * Em produção usar variável de ambiente.
-     *
-     * Precisa ter pelo menos 32 caracteres.
-     */
-    @Value("${app.jwt.secret:techchallenge-secret-key-jwt-super-segura-2026}")
-    private String secretKey;
+    private final PublicKey publicKey;
+    private final String issuer;
 
-    private static final long EXPIRATION_TIME =
-            1000 * 60 * 60; // 1h
+    @Autowired
+    public JwtService(
+            @Value("${app.jwt.public-key}") String publicKeyPem,
+            @Value("${app.jwt.issuer:mecanica-auth}") String issuer) {
 
-    public String gerarToken(String username, String role) {
-
-        return Jwts.builder()
-                .setSubject(username)
-                .claim("role", role)
-                .setIssuedAt(new Date())
-                .setExpiration(
-                        new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(getKey())
-                .compact();
+        this(new RsaPublicKeyLoader().load(publicKeyPem), issuer);
     }
 
-    public String extrairUsername(String token) {
+    JwtService(PublicKey publicKey, String issuer) {
+        if (publicKey == null) {
+            throw new IllegalArgumentException("A chave pública é obrigatória");
+        }
+        if (issuer == null || issuer.isBlank()) {
+            throw new IllegalArgumentException("O emissor do token é obrigatório");
+        }
 
-        return extrairClaims(token).getSubject();
+        this.publicKey = publicKey;
+        this.issuer = issuer;
     }
 
-    public String extrairRole(String token) {
-
-        return extrairClaims(token).get("role", String.class);
+    public String extractSubject(String token) {
+        return extractClaims(token).getSubject();
     }
 
-    public boolean tokenValido(String token) {
+    public String extractRole(String token) {
+        return extractClaims(token).get("role", String.class);
+    }
 
+    public boolean isValid(String token) {
         try {
-
-            Jwts.parserBuilder()
-                    .setSigningKey(getKey())
-                    .build()
-                    .parseClaimsJws(token);
-
+            extractClaims(token);
             return true;
-
-        } catch (Exception ex) {
-
+        } catch (RuntimeException exception) {
             return false;
         }
     }
 
-    private Claims extrairClaims(String token) {
-
+    private Claims extractClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getKey())
+                .requireIssuer(issuer)
+                .setSigningKey(publicKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-    }
-
-    private Key getKey() {
-
-        byte[] keyBytes =
-                secretKey.getBytes(StandardCharsets.UTF_8);
-
-        return Keys.hmacShaKeyFor(keyBytes);
     }
 }
