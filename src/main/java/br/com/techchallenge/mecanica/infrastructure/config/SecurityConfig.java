@@ -45,7 +45,8 @@ public class SecurityConfig {
                                                                 "/v3/api-docs/**",
                                                                 "/ordens-servico/acompanhamento/**",
                                                                 "/actuator/health",
-                                                                "/actuator/health/**")
+                                                                "/actuator/health/**",
+                                                                "/actuator/prometheus")
                                                 .permitAll()
                                                 .requestMatchers(
                                                                 "/ordens-servico/**")
