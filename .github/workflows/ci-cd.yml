@@ -3,18 +3,11 @@ name: CI/CD - Mecânica
 on:
   push:
     branches:
-      - main
-      - master
-      - phase-1
-      - phase-2
-      - phase-2-infra
+      - "feature/**"
   pull_request:
     branches:
+      - homolog
       - main
-      - master
-      - phase-1
-      - phase-2
-      - phase-2-infra
   workflow_dispatch:
 
 permissions:
@@ -26,7 +19,7 @@ env:
 
 jobs:
   build-test-deploy:
-    name: Build, testes e deploy Kubernetes
+    name: Build and test
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
