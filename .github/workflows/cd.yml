@@ -95,11 +95,24 @@ jobs:
         run: |
           kubectl apply -f k8s/app-configmap.yaml
           kubectl apply -f k8s/app-service.yaml
-          kubectl apply -f k8s/app-deployment.yaml
+          kubectl set image -f k8s/app-deployment.yaml \
+            mecanica-api="$IMAGE_URI" \
+            --local -o yaml | kubectl apply -f -
           kubectl apply -f k8s/app-hpa.yaml
-          kubectl -n "$K8S_NAMESPACE" set image deployment/mecanica-api mecanica-api="$IMAGE_URI"
           kubectl -n "$K8S_NAMESPACE" rollout status deployment/mecanica-api --timeout=600s
 
       - name: Show deployed resources
         if: always()
         run: kubectl get deployment,pods,service,hpa -n "$K8S_NAMESPACE" || true
+
+      - name: Diagnose failed deployment
+        if: failure()
+        run: |
+          kubectl describe deployment mecanica-api -n "$K8S_NAMESPACE" || true
+          kubectl describe pods -n "$K8S_NAMESPACE" -l app=mecanica-api || true
+          for POD in $(kubectl get pods -n "$K8S_NAMESPACE" -l app=mecanica-api -o name); do
+            echo "Current logs for $POD"
+            kubectl logs -n "$K8S_NAMESPACE" "$POD" --all-containers --tail=200 || true
+            echo "Previous logs for $POD"
+            kubectl logs -n "$K8S_NAMESPACE" "$POD" --all-containers --previous --tail=200 || true
+          done
