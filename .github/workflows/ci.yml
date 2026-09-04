@@ -36,6 +36,9 @@ jobs:
       - name: Run tests and coverage verification
         run: ./mvnw --batch-mode clean verify
 
+      - name: Verify PostgreSQL driver in deployment package
+        run: jar tf target/mecanica-*.jar | grep -q "BOOT-INF/lib/postgresql-"
+
       - name: Build container image
         run: docker build --tag mecanica-api:${{ github.sha }} .
 
