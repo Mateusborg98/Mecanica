@@ -21,7 +21,34 @@ spec:
         app: mecanica-api
       annotations:
         ad.datadoghq.com/mecanica-api.logs: '[{"source":"java","service":"mecanica-api"}]'
-        ad.datadoghq.com/mecanica-api.checks: '{"openmetrics":{"init_config":{},"instances":[{"openmetrics_endpoint":"http://%%host%%:8080/actuator/prometheus","namespace":"mecanica","metrics":[".*"]}]}}'
+        ad.datadoghq.com/mecanica-api.checks: >-
+          {
+            "openmetrics": {
+              "init_config": {},
+              "instances": [{
+                "openmetrics_endpoint": "http://%%host%%:8080/actuator/prometheus",
+                "namespace": "mecanica",
+                "metrics": [
+                  {"mecanica_ordens_servico_criadas_total": "ordens_servico.criadas"},
+                  {"mecanica_ordens_servico_status_transicoes_total": "ordens_servico.status.transicoes"},
+                  {"mecanica_ordens_servico_status_duracao_seconds_sum": "ordens_servico.status.duracao.sum"},
+                  {"mecanica_ordens_servico_status_duracao_seconds_count": "ordens_servico.status.duracao.count"},
+                  {"mecanica_ordens_servico_processamento_falhas_total": "ordens_servico.processamento.falhas"},
+                  {"http_server_requests_seconds_sum": "api.http.requests.duration.sum"},
+                  {"http_server_requests_seconds_count": "api.http.requests.duration.count"}
+                ]
+              }]
+            },
+            "http_check": {
+              "init_config": {},
+              "instances": [{
+                "name": "mecanica-api-health",
+                "url": "http://%%host%%:8080/actuator/health",
+                "timeout": 5,
+                "tags": ["service:mecanica-api"]
+              }]
+            }
+          }
     spec:
       containers:
         - name: mecanica-api
