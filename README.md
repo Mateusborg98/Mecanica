@@ -120,6 +120,12 @@ A aplicação fornece:
 - `X-Correlation-ID` em todas as requisições;
 - métricas HTTP, JVM e datasource em `/actuator/prometheus`;
 - autodiscovery Datadog para logs e OpenMetrics;
+- contador `mecanica_ordens_servico_criadas_total` para o volume de ordens;
+- contador `mecanica_ordens_servico_status_transicoes_total` por status;
+- duração `mecanica_ordens_servico_status_duracao_seconds` por etapa
+  (`diagnostico`, `execucao` e `finalizacao`);
+- contador `mecanica_ordens_servico_processamento_falhas_total` para falhas nas
+  rotas de ordens de serviço.
 - healthchecks `/actuator/health/liveness` e `/actuator/health/readiness`.
 
 O agente, dashboards e alertas Datadog pertencem ao repositório de infraestrutura Kubernetes.

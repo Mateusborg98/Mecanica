@@ -24,10 +24,15 @@ import br.com.techchallenge.mecanica.domain.exception.ServicoNaoEncontradoExcept
 import br.com.techchallenge.mecanica.domain.exception.VeiculoDuplicadoException;
 import br.com.techchallenge.mecanica.domain.exception.VeiculoNaoEncontradoException;
 import br.com.techchallenge.mecanica.presentation.dto.erro.ErroResponse;
+import br.com.techchallenge.mecanica.infrastructure.observability.OrdemDeServicoMetrics;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final OrdemDeServicoMetrics metrics;
 
     @ExceptionHandler({
             ClienteNaoEncontradoException.class,
@@ -69,6 +74,9 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<ErroResponse> resposta(
             HttpStatus status, String mensagem, HttpServletRequest request, Map<String, String> campos) {
+        if (request.getRequestURI().startsWith("/ordens-servico")) {
+            metrics.registrarFalha(request.getRequestURI(), status.value());
+        }
         return ResponseEntity.status(status).body(new ErroResponse(
                 OffsetDateTime.now(),
                 status.value(),
