@@ -37,6 +37,11 @@ Diagramas de componentes, sequências e modelo ER: [docs/architecture.md](docs/a
 
 A autenticação ocorre no API Gateway e na Lambda. A Lambda consulta CPF/CNPJ e devolve um JWT. A API valida assinatura RS256, emissor, expiração e role usando apenas a chave pública.
 
+Na abertura de uma ordem, o cliente autenticado informa o CPF/CNPJ, a placa e
+a `matriculaOperador` responsável. A matrícula é validada contra um operador
+ativo; ela não é inferida do `sub` do JWT, pois o subject representa o UUID do
+cliente autenticado.
+
 ```http
 GET /ordens-servico
 Authorization: Bearer <accessToken>
