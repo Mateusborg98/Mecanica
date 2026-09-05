@@ -51,7 +51,7 @@ Authorization: Bearer <accessToken>
 .\mvnw.cmd clean verify
 ```
 
-Os testes usam H2 em memória. O comando também gera `target/site/jacoco/index.html` e exige ao menos 80% de cobertura. A última validação local executou 96 testes com sucesso.
+Os testes usam H2 em memória. O comando também gera `target/site/jacoco/index.html` e exige ao menos 80% de cobertura. A última validação local executou 100 testes com sucesso.
 
 ## Execução local com Docker
 
@@ -129,6 +129,9 @@ A aplicação fornece:
 - healthchecks `/actuator/health/liveness` e `/actuator/health/readiness`.
 
 O agente, dashboards e alertas Datadog pertencem ao repositório de infraestrutura Kubernetes.
+
+O roteiro completo de conferência e das evidências necessárias para a entrega
+está em [docs/delivery-checklist.md](docs/delivery-checklist.md).
 
 ## Fluxo de branches
 
