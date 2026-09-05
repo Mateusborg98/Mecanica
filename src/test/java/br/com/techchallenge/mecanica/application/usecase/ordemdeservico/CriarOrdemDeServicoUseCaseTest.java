@@ -42,6 +42,7 @@ class CriarOrdemDeServicoUseCaseTest {
     private ServicoGateway servicoGateway;
     private PecaGateway pecaGateway;
     private EstoqueGateway estoqueGateway;
+    private NotificarAlteracaoStatusOrdemUseCase notificacaoUseCase;
     private CriarOrdemDeServicoUseCase useCase;
 
     @BeforeEach
@@ -53,6 +54,7 @@ class CriarOrdemDeServicoUseCaseTest {
         servicoGateway = mock(ServicoGateway.class);
         pecaGateway = mock(PecaGateway.class);
         estoqueGateway = mock(EstoqueGateway.class);
+        notificacaoUseCase = mock(NotificarAlteracaoStatusOrdemUseCase.class);
         useCase = new CriarOrdemDeServicoUseCase(
                 ordemGateway,
                 clienteGateway,
@@ -60,7 +62,8 @@ class CriarOrdemDeServicoUseCaseTest {
                 operadorGateway,
                 servicoGateway,
                 pecaGateway,
-                estoqueGateway);
+                estoqueGateway,
+                notificacaoUseCase);
     }
 
     @Test
@@ -95,6 +98,7 @@ class CriarOrdemDeServicoUseCaseTest {
         assertEquals(3, estoque.getQuantidade());
         verify(estoqueGateway).salvar(estoque);
         verify(ordemGateway).salvar(any(OrdemDeServico.class));
+        verify(notificacaoUseCase).executar(resultado);
     }
 
     @Test

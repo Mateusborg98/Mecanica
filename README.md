@@ -51,7 +51,7 @@ Authorization: Bearer <accessToken>
 .\mvnw.cmd clean verify
 ```
 
-Os testes usam H2 em memória. O comando também gera `target/site/jacoco/index.html` e exige ao menos 80% de cobertura. A última validação local executou 96 testes com sucesso.
+Os testes usam H2 em memória. O comando também gera `target/site/jacoco/index.html` e exige ao menos 80% de cobertura. A última validação local executou 100 testes com sucesso.
 
 ## Execução local com Docker
 
@@ -120,9 +120,18 @@ A aplicação fornece:
 - `X-Correlation-ID` em todas as requisições;
 - métricas HTTP, JVM e datasource em `/actuator/prometheus`;
 - autodiscovery Datadog para logs e OpenMetrics;
+- contador `mecanica_ordens_servico_criadas_total` para o volume de ordens;
+- contador `mecanica_ordens_servico_status_transicoes_total` por status;
+- duração `mecanica_ordens_servico_status_duracao_seconds` por etapa
+  (`diagnostico`, `execucao` e `finalizacao`);
+- contador `mecanica_ordens_servico_processamento_falhas_total` para falhas nas
+  rotas de ordens de serviço.
 - healthchecks `/actuator/health/liveness` e `/actuator/health/readiness`.
 
 O agente, dashboards e alertas Datadog pertencem ao repositório de infraestrutura Kubernetes.
+
+O roteiro completo de conferência e das evidências necessárias para a entrega
+está em [docs/delivery-checklist.md](docs/delivery-checklist.md).
 
 ## Fluxo de branches
 

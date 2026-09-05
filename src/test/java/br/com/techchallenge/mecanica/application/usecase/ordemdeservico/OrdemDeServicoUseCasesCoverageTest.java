@@ -266,7 +266,8 @@ class OrdemDeServicoUseCasesCoverageTest {
 
         var resultado = new CriarOrdemDeServicoUseCase(
                 ordemGateway, clienteGateway, veiculoGateway, operadorGateway,
-                servicoGateway, pecaGateway, estoqueGateway)
+                servicoGateway, pecaGateway, estoqueGateway,
+                mock(NotificarAlteracaoStatusOrdemUseCase.class))
                 .executar(new CriarOrdemDeServicoInput(
                         clienteId, veiculoId, operadorId, null, null));
 
@@ -286,7 +287,8 @@ class OrdemDeServicoUseCasesCoverageTest {
         var pecaId = UUID.randomUUID();
         var useCase = new CriarOrdemDeServicoUseCase(
                 ordemGateway, clienteGateway, veiculoGateway, operadorGateway,
-                servicoGateway, pecaGateway, estoqueGateway);
+                servicoGateway, pecaGateway, estoqueGateway,
+                mock(NotificarAlteracaoStatusOrdemUseCase.class));
 
         var basico = new CriarOrdemDeServicoInput(clienteId, veiculoId, operadorId);
         assertThrows(ClienteNaoEncontradoException.class, () -> useCase.executar(basico));
