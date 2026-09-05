@@ -39,6 +39,7 @@ public class CriarOrdemDeServicoUseCase {
     private final ServicoGateway servicoGateway;
     private final PecaGateway pecaGateway;
     private final EstoqueGateway estoqueGateway;
+    private final NotificarAlteracaoStatusOrdemUseCase notificarAlteracaoStatusOrdemUseCase;
 
     @Transactional
     public OrdemDeServico executar(CriarOrdemDeServicoInput input) {
@@ -90,7 +91,9 @@ public class CriarOrdemDeServicoUseCase {
                     peca.getPreco()));
         }
 
-        return ordemGateway.salvar(ordem);
+        OrdemDeServico ordemCriada = ordemGateway.salvar(ordem);
+        notificarAlteracaoStatusOrdemUseCase.executar(ordemCriada);
+        return ordemCriada;
     }
 
     private <T> List<T> listaOuVazia(List<T> itens) {

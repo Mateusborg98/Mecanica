@@ -6,6 +6,8 @@ import br.com.techchallenge.mecanica.presentation.annotation.CpfCnpjAnnotation;
 import br.com.techchallenge.mecanica.presentation.annotation.PlacaValida;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 public record CriarOrdemDeServicoRequest(
     @NotBlank
@@ -15,6 +17,10 @@ public record CriarOrdemDeServicoRequest(
     @NotBlank
     @PlacaValida
     String placa,
+
+    @NotNull
+    @Positive
+    Integer matriculaOperador,
 
     List<@Valid ServicoRequestDto> servicos,
 

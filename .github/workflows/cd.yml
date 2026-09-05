@@ -1,0 +1,118 @@
+name: Application CD
+
+on:
+  push:
+    branches:
+      - homolog
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: mecanica-api
+  K8S_NAMESPACE: mecanica
+
+jobs:
+  deploy:
+    name: Deploy application
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ github.ref_name == 'main' && 'production' || 'homolog' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Ensure ECR repository exists
+        run: |
+          aws ecr describe-repositories --repository-names "$ECR_REPOSITORY" >/dev/null 2>&1 || \
+            aws ecr create-repository \
+              --repository-name "$ECR_REPOSITORY" \
+              --image-scanning-configuration scanOnPush=true \
+              --encryption-configuration encryptionType=AES256
+
+      - name: Build and publish image
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" .
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_ENV"
+
+      - name: Configure access to EKS
+        run: >-
+          aws eks update-kubeconfig
+          --region "$AWS_REGION"
+          --name "${{ vars.EKS_CLUSTER_NAME }}"
+
+      - name: Ensure database is available
+        run: |
+          STATUS=$(aws rds describe-db-instances \
+            --db-instance-identifier "${{ vars.DATABASE_INSTANCE_ID }}" \
+            --query 'DBInstances[0].DBInstanceStatus' \
+            --output text)
+          if [ "$STATUS" = "stopped" ]; then
+            aws rds start-db-instance \
+              --db-instance-identifier "${{ vars.DATABASE_INSTANCE_ID }}"
+          fi
+          aws rds wait db-instance-available \
+            --db-instance-identifier "${{ vars.DATABASE_INSTANCE_ID }}"
+
+      - name: Create application configuration
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
+          JWT_ISSUER: ${{ vars.JWT_ISSUER }}
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl -n "$K8S_NAMESPACE" create secret generic mecanica-api-secret \
+            --from-literal=SPRING_DATASOURCE_URL="$DATABASE_URL" \
+            --from-literal=SPRING_DATASOURCE_USERNAME="$DATABASE_USERNAME" \
+            --from-literal=SPRING_DATASOURCE_PASSWORD="$DATABASE_PASSWORD" \
+            --from-literal=JWT_PUBLIC_KEY="$JWT_PUBLIC_KEY" \
+            --from-literal=JWT_ISSUER="$JWT_ISSUER" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/app-configmap.yaml
+          kubectl apply -f k8s/app-service.yaml
+          kubectl set image -f k8s/app-deployment.yaml \
+            mecanica-api="$IMAGE_URI" \
+            --local -o yaml | kubectl apply -f -
+          kubectl apply -f k8s/app-hpa.yaml
+          kubectl -n "$K8S_NAMESPACE" rollout status deployment/mecanica-api --timeout=600s
+
+      - name: Show deployed resources
+        if: always()
+        run: kubectl get deployment,pods,service,hpa -n "$K8S_NAMESPACE" || true
+
+      - name: Diagnose failed deployment
+        if: failure()
+        run: |
+          kubectl describe deployment mecanica-api -n "$K8S_NAMESPACE" || true
+          kubectl describe pods -n "$K8S_NAMESPACE" -l app=mecanica-api || true
+          for POD in $(kubectl get pods -n "$K8S_NAMESPACE" -l app=mecanica-api -o name); do
+            echo "Current logs for $POD"
+            kubectl logs -n "$K8S_NAMESPACE" "$POD" --all-containers --tail=200 || true
+            echo "Previous logs for $POD"
+            kubectl logs -n "$K8S_NAMESPACE" "$POD" --all-containers --previous --tail=200 || true
+          done

@@ -31,7 +31,6 @@ import br.com.techchallenge.mecanica.application.usecase.ordemdeservico.NegarOrc
 import br.com.techchallenge.mecanica.application.usecase.veiculo.BuscarVeiculoPorPlacaUseCase;
 import br.com.techchallenge.mecanica.domain.operador.Operador;
 import br.com.techchallenge.mecanica.domain.veiculo.Veiculo;
-import br.com.techchallenge.mecanica.infrastructure.security.UsuarioAutenticadoService;
 import br.com.techchallenge.mecanica.presentation.dto.ordemDeServico.AddServicoPecaOrdemDeServicoDto;
 import br.com.techchallenge.mecanica.presentation.dto.ordemDeServico.AcompanhamentoOrdemResponse;
 import br.com.techchallenge.mecanica.presentation.dto.ordemDeServico.CriarOrdemDeServicoRequest;
@@ -64,7 +63,6 @@ public class OrdemDeServicoController {
     private final AdicionarItensNaOrdemDeServicoUseCase adicionarItensNaOrdemDeServicoUseCase;
     private final CalcularTempoMedioServicosUseCase calcularTempoMedioServicosUseCase;
     private final OrdemDeServicoPresentationMapper mapper;
-    private final UsuarioAutenticadoService usuarioAutenticadoService;
 
     @Operation(summary = "Criar ordem de serviço")
     @PostMapping
@@ -74,8 +72,8 @@ public class OrdemDeServicoController {
 
         UUID clienteId = buscarClientePorCpfCnpjUseCase.executar(request.cpfCnpj()).getId();
         Veiculo veiculo = buscarVeiculoPorPlacaUseCase.executar(request.placa());
-        Integer matricula = usuarioAutenticadoService.getMatricula();
-        Operador operador = buscarOperadorPorMatriculaUseCase.executar(matricula);
+        Operador operador = buscarOperadorPorMatriculaUseCase.executar(
+                request.matriculaOperador());
 
         return mapper.toResponse(criarOrdemDeServicoUseCase.executar(
                 new CriarOrdemDeServicoInput(

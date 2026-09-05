@@ -1,9 +1,10 @@
 package br.com.techchallenge.mecanica.infrastructure.security;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -36,17 +37,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             try {
 
-                String matricula = jwtService.extrairUsername(token);
+                String subject = jwtService.extractSubject(token);
 
-                if (matricula != null
+                if (subject != null
                         && SecurityContextHolder.getContext().getAuthentication() == null
-                        && jwtService.tokenValido(token)) {
+                        && jwtService.isValid(token)) {
+
+                    String role = jwtService.extractRole(token);
+                    var authorities = role == null || role.isBlank()
+                            ? List.<SimpleGrantedAuthority>of()
+                            : List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
-                                    matricula,
+                                    subject,
                                     null,
-                                    Collections.emptyList());
+                                    authorities);
 
                     authentication.setDetails(
                             new WebAuthenticationDetailsSource()
@@ -71,8 +77,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         return path != null &&
                 (
-                        path.startsWith("/auth")
-                                || path.startsWith("/swagger-ui")
+                        path.startsWith("/swagger-ui")
                                 || path.startsWith("/v3/api-docs")
                                 || path.startsWith("/actuator/health"));
     }
